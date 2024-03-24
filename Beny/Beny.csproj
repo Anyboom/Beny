@@ -10,12 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Views\Dialogs\" />
+    <Folder Include="Converters\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotNetProjects.WpfToolkit.Input" Version="6.1.94" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
     <PackageReference Include="SimpleInjector" Version="5.4.4" />
   </ItemGroup>
 
