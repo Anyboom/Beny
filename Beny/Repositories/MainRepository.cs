@@ -12,9 +12,10 @@ namespace Beny.Repositories
     {
         public DbSet<Bet> Bets { get; set; } = null!;
         public DbSet<FootballEvent> FootballEvents { get; set; } = null!;
-        public DbSet<Author> Authors { get; set; } = null!;
         public DbSet<Team> Teams { get; set; } = null!;
         public DbSet<Competition> Competitions { get; set; } = null!;
+        public DbSet<Sport> Sports { get; set; } = null!;
+        public DbSet<Forecast> Forecasts { get; set; } = null!;
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite("Data Source=Beny.db");

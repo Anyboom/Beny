@@ -16,8 +16,9 @@ namespace Beny.Models
         public Competition Competition { get; set; }
         public float Coefficient { get; set; }
         public DateTime StartedAt { get; set; }
-        public DateTime CreatedAt { get;set; }
-        public string Forecast {  get; set; }
+        public DateTime CreatedAt { get; set; }
+        public Forecast Forecast {  get; set; }
         public FootballEventStatus FootballEventStatus { get; set; }
+        public Sport Sport { get; set; }
     }
 }

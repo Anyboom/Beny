@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Beny.Models
 {
-    public class Author
+    public class Forecast
     {
         public int Id { get; set; }
         public string Name { get; set; }
