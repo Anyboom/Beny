@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:behaviors="clr-namespace:Beny.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:Beny.Views.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="clr-namespace:Beny.ViewModels"
@@ -15,6 +16,14 @@
     ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadedWindow}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Closed">
+            <i:InvokeCommandAction Command="{Binding ClosedWindow}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="90*" />
@@ -42,7 +51,7 @@
                         <TextBox
                             Padding="3,5,3,5"
                             behaviors:AutoCompleteBehavior.AutoCompleteItemsSource="{Binding TeamList}"
-                            Text="{Binding FootballEventDTO.HomeTeam, UpdateSourceTrigger=PropertyChanged}" />
+                            Text="{Binding FootballEventDTO.HomeTeam, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
                         <TextBlock Margin="0,10,0,5" Text="Гостевая команда:" />
                         <TextBox
                             Padding="3,5,3,5"
@@ -55,11 +64,7 @@
                             Text="{Binding FootballEventDTO.Forecast, UpdateSourceTrigger=PropertyChanged}" />
                         <TextBlock Margin="0,10,0,5" Text="Коэффициент:" />
                         <TextBox Padding="3,5,3,5" Text="{Binding FootballEventDTO.Coefficient, UpdateSourceTrigger=PropertyChanged}" />
-                        <TextBlock Margin="0,10,0,5" Text="Спорт:" />
-                        <ComboBox
-                            Padding="3,5,3,5"
-                            ItemsSource="{Binding SportList}"
-                            SelectedValue="{Binding FootballEventDTO.Sport}" />
+
                         <TextBlock Margin="0,10,0,5" Text="Дата:" />
                         <DatePicker
                             Padding="3,5"
@@ -92,6 +97,11 @@
                             Padding="3,5,3,5"
                             behaviors:AutoCompleteBehavior.AutoCompleteItemsSource="{Binding CompetitionList}"
                             Text="{Binding FootballEventDTO.Competition, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Margin="0,10,0,5" Text="Спорт:" />
+                        <TextBox
+                            Padding="3,5,3,5"
+                            behaviors:AutoCompleteBehavior.AutoCompleteItemsSource="{Binding SportList}"
+                            Text="{Binding FootballEventDTO.Sport, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" VerticalAlignment="Bottom">
                         <Button
@@ -102,10 +112,13 @@
                         <Button
                             Margin="0,5,0,5"
                             Padding="3,5,3,5"
+                            Command="{Binding AddFootballEvent}"
+                            CommandParameter="{Binding SelectedFootballEvent}"
                             Content="Изменить" />
                         <Button
                             Margin="0,5,0,5"
                             Padding="3,5,3,5"
+                            Command="{Binding DeleteFootballEvent}"
                             Content="Удалить" />
                         <Button
                             Margin="0,5,0,0"
@@ -120,11 +133,16 @@
                     AutoGenerateColumns="False"
                     ColumnWidth="*"
                     IsReadOnly="True"
-                    ItemsSource="{Binding FootballEvents}"
+                    ItemsSource="{Binding CurrentBet.FootballEvents}"
                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    SelectedValue="{Binding SelectedFootballEvent}"
                     SelectionMode="Single"
                     SelectionUnit="FullRow">
                     <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Id}"
+                            Header="Ид" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding HomeTeam.Name}"
@@ -153,6 +171,10 @@
                             Width="*"
                             Binding="{Binding Competition.Name}"
                             Header="Чемпионат" />
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding FootballEventStatus}"
+                            Header="Статус" />
                     </DataGrid.Columns>
                     <DataGrid.CellStyle>
                         <Style TargetType="DataGridCell">
@@ -169,7 +191,11 @@
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
             Orientation="Horizontal">
-            <Button Padding="50,5" Content="Сохранить" />
+            <Button
+                Padding="50,5"
+                Command="{Binding SaveBet}"
+                CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                Content="Сохранить" />
         </WrapPanel>
     </Grid>
 </Window>

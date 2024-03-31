@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Beny.ViewModels.Base
 {
-    public class ViewModel : INotifyPropertyChanged
+    public class BindableBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

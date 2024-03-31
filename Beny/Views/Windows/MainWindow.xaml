@@ -74,18 +74,20 @@
             IsReadOnly="True"
             ItemsSource="{Binding Bets}"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            SelectedValue="{Binding SelectedBet}"
             SelectionMode="Single"
             SelectionUnit="FullRow">
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Добавить" />
+                    <MenuItem Command="{Binding AddBet}" Header="Добавить" />
                     <MenuItem Header="Удалить" />
-                    <MenuItem Header="Редактировать" />
+                    <MenuItem Command="{Binding EditBet}" Header="Редактировать" />
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Id}" Header="Ид" />
                 <DataGridTextColumn Binding="{Binding FootballEvents.Count}" Header="Количество" />
+                <DataGridTextColumn Binding="{Binding Coefficient}" Header="Коэффициент" />
             </DataGrid.Columns>
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
@@ -123,12 +125,16 @@
                                 Header="Коэффициент" />
                             <DataGridTextColumn
                                 Width="*"
+                                Binding="{Binding Forecast.Name}"
+                                Header="Ставка" />
+                            <DataGridTextColumn
+                                Width="*"
                                 Binding="{Binding StartedAt, StringFormat=HH:mm | d MMM yyyy}"
                                 Header="Начало события" />
                             <DataGridTextColumn
                                 Width="*"
-                                Binding="{Binding Forecast}"
-                                Header="Ставка" />
+                                Binding="{Binding Sport.Name}"
+                                Header="Спорт" />
                         </DataGrid.Columns>
                         <DataGrid.CellStyle>
                             <Style TargetType="DataGridCell">

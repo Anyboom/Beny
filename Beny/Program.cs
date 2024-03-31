@@ -21,7 +21,7 @@ namespace Beny
 
             //container.Register<DbContext, MainRepository>(Lifestyle.Scoped);
 
-            container.RegisterInstance(new MainRepository());
+            container.Register<MainRepository>(Lifestyle.Singleton);
 
             container.Register<MainViewModel>();
             container.Register<MainWindow>();
@@ -33,7 +33,7 @@ namespace Beny
 
             App app = new App();
 
-            Window window = container.GetInstance<BetWindow>();
+            Window window = container.GetInstance<MainWindow>();
 
             app.Run(window);
         }

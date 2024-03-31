@@ -5,10 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Beny.ViewModels.Base;
+using System.Collections;
 
 namespace Beny.ViewModels.DTO
 {
-    public class FootballEventDTO
+    public class FootballEventDTO : BindableBase
     {
         public string HomeTeam { get; set; }
         public string GuestTeam { get; set; }

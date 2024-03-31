@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace Beny.Repositories
 {
@@ -22,8 +23,7 @@ namespace Beny.Repositories
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Team>()
-            .HasIndex(p => p.Name).IsUnique();
+            modelBuilder.Entity<Team>().HasIndex(p => p.Name).IsUnique();
         }
     }
 }
