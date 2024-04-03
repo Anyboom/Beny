@@ -9,18 +9,31 @@ using System.Threading.Tasks;
 namespace Beny.Models
 {
     public class Bet : BindableBase
-    { 
-        public int Id { get; set; }
+    {
+        private int _Id;
+        public int Id
+        {
+            get
+            {
+                return _Id;
+            }
+            set
+            {
+                _Id = value;
+
+                OnPropertyChanged(nameof(Id));
+            }
+        }
 
         public ObservableCollection<FootballEvent> FootballEvents { get; set; } = new ObservableCollection<FootballEvent>();
 
         public DateTime CreatedAt { get; set; }
 
-        public float Coefficient
+        public float? Coefficient
         {
             get
             {
-                float result = 1.0f;
+                float? result = 1.0f;
 
                 foreach (FootballEvent footballEvent in FootballEvents)
                 {

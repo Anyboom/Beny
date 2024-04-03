@@ -22,6 +22,7 @@ namespace Beny
             //container.Register<DbContext, MainRepository>(Lifestyle.Scoped);
 
             container.Register<MainRepository>(Lifestyle.Singleton);
+            container.Register<ErrorsViewModel>();
 
             container.Register<MainViewModel>();
             container.Register<MainWindow>();

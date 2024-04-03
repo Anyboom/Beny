@@ -11,6 +11,7 @@ using SimpleInjector;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace Beny.ViewModels
     {
         private MainRepository mainRepository;
         private IDialogService dialogService;
+        private CollectionView collectionView;
 
         public ObservableCollection<Bet> Bets { get; set; }
         public DateTime StartRange { get; set; } = DateTime.Now.AddDays(-4);
@@ -46,6 +48,10 @@ namespace Beny.ViewModels
 
                     Bets = mainRepository.Bets.Local.ToObservableCollection();
 
+                    collectionView = (CollectionView)CollectionViewSource.GetDefaultView(Bets);
+
+                    collectionView.SortDescriptions.Add(new SortDescription(nameof(Bet.CreatedAt), ListSortDirection.Descending));
+
                     OnPropertyChanged(nameof(Bets));
                 });
             }
@@ -57,8 +63,6 @@ namespace Beny.ViewModels
             {
                 return new RelayCommand(_ =>
                 {
-                    CollectionView collectionView = (CollectionView) CollectionViewSource.GetDefaultView(Bets);
-
                     collectionView.Filter = (x) =>
                     {
                         Bet bet = (Bet) x;
@@ -76,7 +80,6 @@ namespace Beny.ViewModels
                 return new RelayCommand(_ =>
                 {
                     dialogService.ShowDialog<BetWindow, BetViewModel>();
-                    OnPropertyChanged(nameof(Bets));
                 });
             }
         }
@@ -88,8 +91,6 @@ namespace Beny.ViewModels
                 return new RelayCommand(_ =>
                 {
                     dialogService.ShowDialog<BetWindow, BetViewModel>(x => x.UpdateBetId = SelectedBet.Id);
-                    OnPropertyChanged(nameof(Bets));
-                    
                 });
             }
         }

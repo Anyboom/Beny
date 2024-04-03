@@ -49,8 +49,8 @@ namespace Beny.Models
                 OnPropertyChanged(nameof(Competition));
             }
         }
-        private float _Coefficient { get; set; }
-        public float Coefficient
+        private float? _Coefficient { get; set; }
+        public float? Coefficient
         {
             get
             {
