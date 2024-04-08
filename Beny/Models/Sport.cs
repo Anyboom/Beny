@@ -1,4 +1,4 @@
-﻿using Beny.ViewModels.Base;
+﻿using Beny.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,31 +9,31 @@ namespace Beny.Models
 {
     public class Sport : BindableBase
     {
-        private int _Id;
+        private int _id;
         public int Id
         {
             get
             {
-                return _Id;
+                return _id;
             }
             set
             {
                 OnPropertyChanged(nameof(Id));
-                _Id = value;
+                _id = value;
             }
         }
 
-        private string _Name;
+        private string _name;
         public string Name
         {
             get
             {
-                return _Name;
+                return _name;
             }
             set
             {
                 OnPropertyChanged(nameof(Name));
-                _Name = value;
+                _name = value;
             }
         }
 

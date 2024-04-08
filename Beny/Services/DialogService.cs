@@ -1,8 +1,7 @@
 ﻿using System;
 using SimpleInjector;
 using System.Windows;
-using Beny.Services.Interfaces;
-using Beny.ViewModels.Base;
+using Beny.Interfaces;
 
 namespace Beny.Services
 {

@@ -1,5 +1,5 @@
-﻿using Beny.Models.Enums;
-using Beny.ViewModels.Base;
+﻿using Beny.Base;
+using Beny.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;

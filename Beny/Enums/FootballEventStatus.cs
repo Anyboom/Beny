@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Beny.Models.Enums
+namespace Beny.Enums
 {
     public enum FootballEventStatus
     {

@@ -1,7 +1,7 @@
 ﻿using System.Windows;
+using Beny.Interfaces;
 using Beny.Repositories;
 using Beny.Services;
-using Beny.Services.Interfaces;
 using Beny.ViewModels;
 using Beny.Views.Dialogs;
 using Beny.Views.Windows;
@@ -18,8 +18,6 @@ namespace Beny
             Container container = new Container();
 
             container.Register<IDialogService, DialogService>();
-
-            //container.Register<DbContext, MainRepository>(Lifestyle.Scoped);
 
             container.Register<MainRepository>(Lifestyle.Singleton);
             container.Register<ErrorsViewModel>();

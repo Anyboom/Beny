@@ -12,11 +12,11 @@ namespace Beny.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            int countList = int.Parse(value.ToString());
+            int firstNumber = int.Parse(value.ToString());
 
-            int condition = int.Parse(parameter.ToString());
+            int secondNumber = int.Parse(parameter.ToString());
 
-            return countList > condition;
+            return firstNumber > secondNumber;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

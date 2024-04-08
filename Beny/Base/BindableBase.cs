@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Beny.ViewModels.Base
+namespace Beny.Base
 {
     public class BindableBase : INotifyPropertyChanged
     {

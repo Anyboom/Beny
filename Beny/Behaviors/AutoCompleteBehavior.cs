@@ -11,8 +11,8 @@ namespace Beny.Behaviors
 {
     public static class AutoCompleteBehavior
     {
-        private static TextChangedEventHandler onTextChanged = new TextChangedEventHandler(OnTextChanged);
-        private static KeyEventHandler onKeyDown = new KeyEventHandler(OnPreviewKeyDown);
+        private static TextChangedEventHandler _onTextChanged = new TextChangedEventHandler(OnTextChanged);
+        private static KeyEventHandler _onKeyDown = new KeyEventHandler(OnPreviewKeyDown);
 
         public static readonly DependencyProperty AutoCompleteItemsSource =
             DependencyProperty.RegisterAttached
@@ -61,12 +61,12 @@ namespace Beny.Behaviors
             if (sender == null)
                 return;
 
-            tb.TextChanged -= onTextChanged;
-            tb.PreviewKeyDown -= onKeyDown;
+            tb.TextChanged -= _onTextChanged;
+            tb.PreviewKeyDown -= _onKeyDown;
             if (e.NewValue != null)
             {
-                tb.TextChanged += onTextChanged;
-                tb.PreviewKeyDown += onKeyDown;
+                tb.TextChanged += _onTextChanged;
+                tb.PreviewKeyDown += _onKeyDown;
             }
         }
         public static StringComparison GetAutoCompleteStringComparison(DependencyObject obj)
@@ -164,12 +164,12 @@ namespace Beny.Behaviors
                 return;
 
             int matchStart = (startIndex + matchingString.Length);
-            tb.TextChanged -= onTextChanged;
+            tb.TextChanged -= _onTextChanged;
             tb.Text += match;
             tb.CaretIndex = matchStart;
             tb.SelectionStart = matchStart;
             tb.SelectionLength = (tb.Text.Length - startIndex);
-            tb.TextChanged += onTextChanged;
+            tb.TextChanged += _onTextChanged;
         }
     }
 }

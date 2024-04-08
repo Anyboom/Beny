@@ -1,7 +1,8 @@
-﻿using Beny.Commands;
+﻿using Beny.Base;
+using Beny.Commands;
+using Beny.Enums;
 using Beny.Models;
 using Beny.Repositories;
-using Beny.ViewModels.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -23,15 +24,25 @@ namespace Beny.ViewModels
 {
     public class BetViewModel : BindableBase, INotifyDataErrorInfo
     {
-        private readonly MainRepository _mainRepository;
-        private readonly ErrorsViewModel _errorsViewModel;
+        #region [Private variables]
 
-        private string _HomeTeam;
-        private string _GuestTeam;
-        private string _Competition;
-        private string _Forecast;
-        private string _Sport;
-        private string _Coefficient;
+        private readonly ErrorsViewModel _errorsViewModel;
+        private readonly MainRepository _mainRepository;
+
+        private string _homeTeam;
+        private string _guestTeam;
+        private string _competition;
+        private string _forecast;
+        private string _sport;
+        private string _coefficient;
+        private int _minute;
+        private int _hour;
+
+        private FootballEvent _selectedFootballEvent;
+
+        #endregion
+
+        #region [Getters/Setters]
 
         public ObservableCollection<string> TeamList { get; set; }
         public ObservableCollection<string> ForecastList { get; set; }
@@ -44,16 +55,15 @@ namespace Beny.ViewModels
         public int UpdateBetId { get; set; } = -1;
         public Bet CurrentBet { get; set; }
 
-
-        private FootballEvent _SelectedFootballEvent;
-        public FootballEvent SelectedFootballEvent {
+        public FootballEvent SelectedFootballEvent
+        {
             get
             {
-                return _SelectedFootballEvent;
+                return _selectedFootballEvent;
             }
             set
             {
-                _SelectedFootballEvent = value;
+                _selectedFootballEvent = value;
 
                 this.Sport = value?.Sport?.Name;
                 this.Coefficient = value?.Coefficient.ToString();
@@ -65,6 +75,8 @@ namespace Beny.ViewModels
                 this.Competition = value?.Competition?.Name;
                 this.Forecast = value?.Forecast?.Name;
 
+                IsValidatedForm = true;
+
                 OnPropertyChanged(nameof(SelectedFootballEvent));
             }
         }
@@ -73,11 +85,19 @@ namespace Beny.ViewModels
         {
             get
             {
-                return _HomeTeam;
+                return _homeTeam;
             }
             set
             {
-                _HomeTeam = value;
+                _homeTeam = value?.Trim();
+
+                _errorsViewModel.ClearErrors(nameof(HomeTeam));
+
+                if (string.IsNullOrWhiteSpace(_homeTeam))
+                {
+                    _errorsViewModel.AddError(nameof(HomeTeam), "Поле обязательно для заполнения.");
+                }
+
                 OnPropertyChanged(nameof(HomeTeam));
             }
         }
@@ -86,11 +106,19 @@ namespace Beny.ViewModels
         {
             get
             {
-                return _GuestTeam;
+                return _guestTeam;
             }
             set
             {
-                _GuestTeam = value;
+                _guestTeam = value?.Trim();
+
+                _errorsViewModel.ClearErrors(nameof(GuestTeam));
+
+                if (string.IsNullOrWhiteSpace(_guestTeam))
+                {
+                    _errorsViewModel.AddError(nameof(GuestTeam), "Поле обязательно для заполнения.");
+                }
+
                 OnPropertyChanged(nameof(GuestTeam));
             }
         }
@@ -99,11 +127,19 @@ namespace Beny.ViewModels
         {
             get
             {
-                return _Competition;
+                return _competition;
             }
             set
             {
-                _Competition = value;
+                _competition = value?.Trim();
+
+                _errorsViewModel.ClearErrors(nameof(Competition));
+
+                if (string.IsNullOrWhiteSpace(_competition))
+                {
+                    _errorsViewModel.AddError(nameof(Competition), "Поле обязательно для заполнения.");
+                }
+
                 OnPropertyChanged(nameof(Competition));
             }
         }
@@ -112,17 +148,22 @@ namespace Beny.ViewModels
         {
             get
             {
-                return _Coefficient;
+                return _coefficient;
             }
             set
             {
-                _Coefficient = value;
+                _coefficient = value?.Trim();
 
                 _errorsViewModel.ClearErrors(nameof(Coefficient));
 
-                if(float.TryParse(_Coefficient, out float _) == false)
+                if (string.IsNullOrWhiteSpace(_coefficient))
                 {
-                    _errorsViewModel.AddError(nameof(Coefficient), "Invalid Coefficient");
+                    _errorsViewModel.AddError(nameof(Coefficient), "Поле обязательно для заполнения.");
+                }
+
+                if (float.TryParse(_coefficient, out float _) == false)
+                {
+                    _errorsViewModel.AddError(nameof(Coefficient), "Поле должно содержать только число или число с разделителем в виде запятой.");
                 }
 
                 OnPropertyChanged(nameof(Coefficient));
@@ -133,11 +174,19 @@ namespace Beny.ViewModels
         {
             get
             {
-                return _Forecast;
+                return _forecast;
             }
             set
             {
-                _Forecast = value;
+                _forecast = value?.Trim();
+
+                _errorsViewModel.ClearErrors(nameof(Forecast));
+
+                if (string.IsNullOrWhiteSpace(_forecast))
+                {
+                    _errorsViewModel.AddError(nameof(Forecast), "Поле обязательно для заполнения.");
+                }
+
                 OnPropertyChanged(nameof(Forecast));
             }
         }
@@ -146,63 +195,88 @@ namespace Beny.ViewModels
         {
             get
             {
-                return _Sport;
+                return _sport;
             }
             set
             {
-                _Sport = value;
+                _sport = value?.Trim();
+
+                _errorsViewModel.ClearErrors(nameof(Sport));
+
+                if (string.IsNullOrWhiteSpace(_sport))
+                {
+                    _errorsViewModel.AddError(nameof(Sport), "Поле обязательно для заполнения.");
+                }
+
                 OnPropertyChanged(nameof(Sport));
             }
         }
 
-        private DateTime _Date = DateTime.Now;
+        private DateTime _date = DateTime.Now;
         public DateTime Date
         {
             get
             {
-                return _Date;
+                return _date;
             }
             set
             {
-                _Date = value;
+                _date = value;
                 OnPropertyChanged(nameof(Date));
             }
         }
-        private int _Hour;
         public int Hour
         {
             get
             {
-                return _Hour;
+                return _hour;
             }
             set
             {
-                _Hour = value;
+                _hour = value;
                 OnPropertyChanged(nameof(Hour));
             }
         }
 
-        private int _Minute;
 
         public int Minute
         {
             get
             {
-                return _Minute;
+                return _minute;
             }
             set
             {
-                _Minute = value;
+                _minute = value;
                 OnPropertyChanged(nameof(Minute));
             }
         }
+
+        #endregion
+
+        #region [Commands]
+
+        public ICommand CreateFootballEventCommand { get; set; }
+        public ICommand EditFootballEventCommand { get; set; }
+        public ICommand DeleteFootballEventCommand { get; set; }
+        public ICommand ClearFootballEventCommand { get; set; }
+        public ICommand ClosedWindowCommand { get; set; }
+        public ICommand LoadedWindowCommand { get; set; }
+        public ICommand SaveBetCommand { get; set; }
+        public ICommand UpdateFootballEventStatusCommand { get; set; }
+
+        #endregion
 
         public BetViewModel(MainRepository mainRepository, ErrorsViewModel errorsViewModel)
         {
             _mainRepository = mainRepository;
 
             _errorsViewModel = errorsViewModel;
-            _errorsViewModel.ErrorsChanged += ErrorsChanged;
+
+            _errorsViewModel.ErrorsChanged += (s, e) =>
+            {
+                ErrorsChanged?.Invoke(s, e);
+            };
 
             mainRepository.Database.EnsureCreated();
 
@@ -227,6 +301,14 @@ namespace Beny.ViewModels
             LoadedWindowCommand = new RelayCommand(LoadedWindow);
             ClosedWindowCommand = new RelayCommand(ClosedWindow);
             SaveBetCommand = new RelayCommand(SaveBet);
+            UpdateFootballEventStatusCommand = new RelayCommand(UpdateFootballEventStatus);
+
+            HomeTeam = "Ливерпуль";
+            GuestTeam = "Манчестер Сити";
+            Forecast = "ТБ 2.5";
+            Competition = "Англия. Премьер-лига";
+            Coefficient = "1,78";
+            Sport = "Футбол";
         }
 
         private void SaveFootballEvent(object x)
@@ -309,7 +391,7 @@ namespace Beny.ViewModels
             footballEvent.CreatedAt = DateTime.Now;
             footballEvent.StartedAt = new DateTime(Date.Year, Date.Month, Date.Day, Hour, Minute, 0);
             footballEvent.Coefficient = float.Parse(Coefficient);
-            footballEvent.FootballEventStatus = Models.Enums.FootballEventStatus.NotCalculated;
+            footballEvent.FootballEventStatus = FootballEventStatus.NotCalculated;
             footballEvent.Competition = competition;
             footballEvent.Sport = sport;
             footballEvent.Forecast = forecast;
@@ -318,12 +400,19 @@ namespace Beny.ViewModels
 
             if (addFootballEvent)
             {
-                footballEvent.Bet = CurrentBet;
-                _mainRepository.FootballEvents.Local.Add(footballEvent);
+                CurrentBet.FootballEvents.Add(footballEvent);
             }
 
             OnPropertyChanged(nameof(CurrentBet));
         }
+
+        private void UpdateFootballEventStatus(object x)
+        {
+            FootballEventStatus updateStatus = (FootballEventStatus) x;
+
+            SelectedFootballEvent.FootballEventStatus = updateStatus;
+        }
+
         private void ClearFootballEvent(object x)
         {
             Sport = string.Empty;
@@ -342,16 +431,18 @@ namespace Beny.ViewModels
             CurrentBet.FootballEvents.Remove(SelectedFootballEvent);
         }
 
-        public ICommand CreateFootballEventCommand { get; set; }
-        public ICommand EditFootballEventCommand { get; set; }
-        public ICommand DeleteFootballEventCommand { get; set; }
-        public ICommand ClearFootballEventCommand { get; set; }
-        public ICommand ClosedWindowCommand { get; set; }
-        public ICommand LoadedWindowCommand { get; set; }
-        public ICommand SaveBetCommand { get; set; }
-
         private void SaveBet(object x)
         {
+            if (CurrentBet.FootballEvents.Count == 0)
+            {
+                return;
+            }
+
+            if (UpdateBetId == -1)
+            {
+                _mainRepository.Add(CurrentBet);
+            }
+
             _mainRepository.SaveChanges();
 
             (x as Window).Close();
@@ -374,6 +465,7 @@ namespace Beny.ViewModels
                         entry.State = EntityState.Unchanged;
                         break;
                     case EntityState.Deleted:
+                        entry.State = EntityState.Detached;
                         entry.Reload();
                         break;
                     case EntityState.Added:
@@ -386,14 +478,20 @@ namespace Beny.ViewModels
             }
         }
 
+        #region [INotifyDataErrorInfo]
+
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
         public bool HasErrors => _errorsViewModel.HasErrors;
+
         public bool CanCreate => HasErrors == false;
 
+        public bool IsValidatedForm = false;
         public IEnumerable GetErrors(string? propertyName)
         {
             return _errorsViewModel.GetErrors(propertyName);
         }
+
+        #endregion
     }
 }

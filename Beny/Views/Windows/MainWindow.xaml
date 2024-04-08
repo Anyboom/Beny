@@ -4,22 +4,24 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:Beny.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:enums="clr-namespace:Beny.Enums"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:Beny.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:Beny.ViewModels"
     Title="MainWindow"
     Width="800"
     Height="450"
+    d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel}"
     Language="Ru"
     mc:Ignorable="d">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
-            <i:InvokeCommandAction Command="{Binding LoadedWindow}" />
+            <i:InvokeCommandAction Command="{Binding LoadedWindowCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <Window.Resources>
-        <converters:MaxItemsConverter x:Key="MaxItemsConverter" />
-        <converters:MoreThanConverter x:Key="MoreThanConverter" />
+        <converters:MoreThanConverter x:Key="MoreThanConverter"></converters:MoreThanConverter>
     </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -33,44 +35,40 @@
             <TextBlock
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Text="Диапазон: " />
-            <DatePicker
-                Width="100"
-                Margin="10,0,5,0"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Focusable="False"
-                SelectedDate="{Binding StartRange}">
-                <DatePicker.Resources>
-                    <Style TargetType="DatePickerTextBox">
-                        <Setter Property="IsReadOnly" Value="True" />
-                    </Style>
-                </DatePicker.Resources>
+                Text="Год: " />
+            <ComboBox Width="100"
+                      Margin="5,0,5,0"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      MaxDropDownHeight="150"
+                      ItemsSource="{Binding YearsList}"
+                      SelectedItem="{Binding SelectedYear}"
+                      Focusable="False">
                 <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="SelectedDateChanged">
-                        <i:InvokeCommandAction Command="{Binding UpdateTableWithRange}" />
+                    <i:EventTrigger EventName="SelectionChanged">
+                        <i:InvokeCommandAction Command="{Binding UpdateTableWithDateCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-            </DatePicker>
-
-            <DatePicker
-                Width="100"
+            </ComboBox>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Text="Месяц: " />
+            <ComboBox Width="100"
                 Margin="5,0,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Focusable="False"
-                SelectedDate="{Binding EndRange}">
-                <DatePicker.Resources>
-                    <Style TargetType="DatePickerTextBox">
-                        <Setter Property="IsReadOnly" Value="True" />
-                    </Style>
-                </DatePicker.Resources>
+                MaxDropDownHeight="150"
+                ItemsSource="{Binding MonthsList}"
+                DisplayMemberPath="Value"
+                SelectedItem="{Binding SelectedMonth}"
+                Focusable="False">
                 <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="SelectedDateChanged">
-                        <i:InvokeCommandAction Command="{Binding UpdateTableWithRange}" />
+                    <i:EventTrigger EventName="SelectionChanged">
+                        <i:InvokeCommandAction Command="{Binding UpdateTableWithDateCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-            </DatePicker>
+            </ComboBox>
         </StackPanel>
         <DataGrid
             Grid.Row="1"
@@ -82,17 +80,41 @@
             SelectedValue="{Binding SelectedBet}"
             SelectionMode="Single"
             SelectionUnit="FullRow">
+            <DataGrid.ItemContainerStyle>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.NotCalculated}">
+                            <Setter Property="Background" Value="Azure" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Win}">
+                            <Setter Property="Background" Value="Green" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Return}">
+                            <Setter Property="Background" Value="Blue" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Lose}">
+                            <Setter Property="Background" Value="Red" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.ItemContainerStyle>
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="{Binding AddBet}" Header="Добавить" />
+                    <MenuItem Command="{Binding AddBetCommand}" Header="Добавить" />
+                    <MenuItem Command="{Binding EditBetCommand}" Header="Редактировать" />
+                    <Separator />
+                    <MenuItem Header="Посмотреть" />
+                    <Separator />
                     <MenuItem Header="Удалить" />
-                    <MenuItem Command="{Binding EditBet}" Header="Редактировать" />
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Id}" Header="Ид" />
-                <DataGridTextColumn Binding="{Binding FootballEvents.Count}" Header="Количество" />
-                <DataGridTextColumn Binding="{Binding Coefficient}" Header="Коэффициент" />
+                <DataGridTextColumn Binding="{Binding CreatedAt, StringFormat=HH:mm | d MMM yyyy}" Header="Дата" />
+                <DataGridTextColumn Binding="{Binding NameType}" Header="Вид"></DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding NameFootballEvent}" Header="Название события"></DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding NameForecasts}" Header="Ставка" />
+                <DataGridTextColumn Binding="{Binding Coefficient, StringFormat={}{0:0.##}}" Header="Коэффициент" />
             </DataGrid.Columns>
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
@@ -100,19 +122,36 @@
                     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                 </Style>
             </DataGrid.CellStyle>
-            <DataGrid.RowDetailsTemplate>
+            <!--<DataGrid.RowDetailsTemplate>
                 <DataTemplate>
                     <DataGrid
+                        MaxHeight="200"
                         AutoGenerateColumns="False"
                         CanUserSortColumns="False"
                         IsReadOnly="True"
-                        ItemsSource="{Binding FootballEvents, Converter={StaticResource MaxItemsConverter}, ConverterParameter=10}"
+                        ItemsSource="{Binding FootballEvents}"
                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
                         SelectionMode="Single"
                         SelectionUnit="FullRow">
                         <DataGrid.RowStyle>
                             <Style TargetType="DataGridRow">
                                 <Setter Property="IsHitTestVisible" Value="False" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding FootballEventStatus}" Value="{x:Static enums:FootballEventStatus.NotCalculated}">
+                                        <Setter Property="Background" Value="Azure" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding FootballEventStatus}" Value="{x:Static enums:FootballEventStatus.Win}">
+                                        <Setter Property="Background" Value="Green" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding FootballEventStatus}" Value="{x:Static enums:FootballEventStatus.Return}">
+                                        <Setter Property="Background" Value="Blue" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding FootballEventStatus}" Value="{x:Static enums:FootballEventStatus.Lose}">
+                                        <Setter Property="Background" Value="Red" />
+                                    </DataTrigger>
+                                    --><!--  Доделать все это  --><!--
+                                </Style.Triggers>
                             </Style>
                         </DataGrid.RowStyle>
                         <DataGrid.Columns>
@@ -153,7 +192,7 @@
                         </DataGrid.CellStyle>
                     </DataGrid>
                 </DataTemplate>
-            </DataGrid.RowDetailsTemplate>
+            </DataGrid.RowDetailsTemplate>-->
         </DataGrid>
     </Grid>
 </Window>
