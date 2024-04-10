@@ -94,6 +94,8 @@ namespace Beny.ViewModels
         public ICommand LoadedWindowCommand { get; set; }
         public ICommand EditBetCommand { get; set; }
         public ICommand AddBetCommand { get; set; }
+        public ICommand DeleteBetCommand { get; set; }
+        public ICommand ShowBetCommand { get; set; }
         public ICommand UpdateTableWithDateCommand { get; set; }
 
         #endregion
@@ -105,10 +107,23 @@ namespace Beny.ViewModels
             this._mainRepository = mainRepository;
             this._dialogService = dialogService;
 
-            EditBetCommand = new RelayCommand(EditBet);
+            EditBetCommand = new RelayCommand(EditBet, _ => SelectedBet != null);
             AddBetCommand = new RelayCommand(AddBet);
-            UpdateTableWithDateCommand = new RelayCommand(UpdateTableWithDate);
+            UpdateTableWithDateCommand = new RelayCommand(UpdateTableWithDate, _ => SelectedBet != null);
             LoadedWindowCommand = new RelayCommand(LoadedWindow);
+            DeleteBetCommand = new RelayCommand(DeleteBet, _ => SelectedBet != null);
+            ShowBetCommand = new RelayCommand(ShowBet, _ => SelectedBet != null);
+        }
+
+        private void ShowBet(object obj)
+        {
+            _dialogService.ShowDialog<ShowBetWindow, ShowBetViewModel>(x => x.Bet = SelectedBet);
+        }
+
+        private void DeleteBet(object obj)
+        {
+            _mainRepository.Bets.Remove(SelectedBet);
+            _mainRepository.SaveChanges();
         }
 
         private void LoadedWindow(object x)
@@ -154,12 +169,12 @@ namespace Beny.ViewModels
 
         private void EditBet(object x)
         {
-            _dialogService.ShowDialog<BetWindow, BetViewModel>(x => x.UpdateBetId = SelectedBet.Id);
+            _dialogService.ShowDialog<BetWindow, CreateOrUpdateBetViewModel>(x => x.UpdateBetId = SelectedBet.Id);
         }
 
         private void AddBet(object x)
         {
-            _dialogService.ShowDialog<BetWindow, BetViewModel>();
+            _dialogService.ShowDialog<BetWindow, CreateOrUpdateBetViewModel>();
         }
 
         #endregion

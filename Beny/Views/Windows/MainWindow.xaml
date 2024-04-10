@@ -21,7 +21,10 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <Window.Resources>
-        <converters:MoreThanConverter x:Key="MoreThanConverter"></converters:MoreThanConverter>
+        <converters:IsExpressToStringConverter x:Key="IsExpressToStringConverter"></converters:IsExpressToStringConverter>
+        <converters:ListFootballEventsToString x:Key="ListFootballEventsToString"></converters:ListFootballEventsToString>
+        <converters:ListForecastsToString x:Key="ListForecastsToString"></converters:ListForecastsToString>
+        <converters:ListFootballEventsToColumnStrings x:Key="ListFootballEventsToColumnStrings"></converters:ListFootballEventsToColumnStrings>
     </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -70,7 +73,7 @@
                 </i:Interaction.Triggers>
             </ComboBox>
         </StackPanel>
-        <DataGrid
+        <DataGrid Style="{DynamicResource DataGridStyle1}"
             Grid.Row="1"
             AutoGenerateColumns="False"
             ColumnWidth="*"
@@ -103,18 +106,34 @@
                     <MenuItem Command="{Binding AddBetCommand}" Header="Добавить" />
                     <MenuItem Command="{Binding EditBetCommand}" Header="Редактировать" />
                     <Separator />
-                    <MenuItem Header="Посмотреть" />
+                    <MenuItem Command="{Binding ShowBetCommand}" Header="Посмотреть" />
                     <Separator />
-                    <MenuItem Header="Удалить" />
+                    <MenuItem Command="{Binding DeleteBetCommand}" Header="Удалить" />
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Id}" Header="Ид" />
-                <DataGridTextColumn Binding="{Binding CreatedAt, StringFormat=HH:mm | d MMM yyyy}" Header="Дата" />
-                <DataGridTextColumn Binding="{Binding NameType}" Header="Вид"></DataGridTextColumn>
-                <DataGridTextColumn Binding="{Binding NameFootballEvent}" Header="Название события"></DataGridTextColumn>
-                <DataGridTextColumn Binding="{Binding NameForecasts}" Header="Ставка" />
-                <DataGridTextColumn Binding="{Binding Coefficient, StringFormat={}{0:0.##}}" Header="Коэффициент" />
+                <DataGridTextColumn Width="5*" Binding="{Binding Id}" Header="Ид" />
+                <DataGridTextColumn Width="17*" Binding="{Binding CreatedAt, StringFormat=HH:mm | d MMM yyyy}" Header="Дата" />
+                <DataGridTextColumn Width="10*" Binding="{Binding IsExpress, Converter={StaticResource IsExpressToStringConverter}}" Header="Вид"></DataGridTextColumn>
+                <DataGridTextColumn Width="40*" CanUserSort="False" Binding="{Binding FootballEvents, Converter={StaticResource ListFootballEventsToString}, ConverterParameter=5}" Header="Название события">
+                    <DataGridTextColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Setter Property="ToolTip" Value="{Binding FootballEvents, Converter={StaticResource ListFootballEventsToColumnStrings}, ConverterParameter=20}" />
+                        </Style>
+                    </DataGridTextColumn.CellStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width="20*" CanUserSort="False" Binding="{Binding FootballEvents, Converter={StaticResource ListForecastsToString}, ConverterParameter=5}" Header="Ставка">
+                    <DataGridTextColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Setter Property="ToolTip" Value="{Binding FootballEvents, Converter={StaticResource ListForecastsToString}, ConverterParameter=10}" />
+                        </Style>
+                    </DataGridTextColumn.CellStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width="15*" Binding="{Binding Coefficient, StringFormat={}{0:0.##}}" Header="Коэффициент" />
             </DataGrid.Columns>
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
@@ -122,77 +141,6 @@
                     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                 </Style>
             </DataGrid.CellStyle>
-            <!--<DataGrid.RowDetailsTemplate>
-                <DataTemplate>
-                    <DataGrid
-                        MaxHeight="200"
-                        AutoGenerateColumns="False"
-                        CanUserSortColumns="False"
-                        IsReadOnly="True"
-                        ItemsSource="{Binding FootballEvents}"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                        SelectionMode="Single"
-                        SelectionUnit="FullRow">
-                        <DataGrid.RowStyle>
-                            <Style TargetType="DataGridRow">
-                                <Setter Property="IsHitTestVisible" Value="False" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding FootballEventStatus}" Value="{x:Static enums:FootballEventStatus.NotCalculated}">
-                                        <Setter Property="Background" Value="Azure" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding FootballEventStatus}" Value="{x:Static enums:FootballEventStatus.Win}">
-                                        <Setter Property="Background" Value="Green" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding FootballEventStatus}" Value="{x:Static enums:FootballEventStatus.Return}">
-                                        <Setter Property="Background" Value="Blue" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding FootballEventStatus}" Value="{x:Static enums:FootballEventStatus.Lose}">
-                                        <Setter Property="Background" Value="Red" />
-                                    </DataTrigger>
-                                    --><!--  Доделать все это  --><!--
-                                </Style.Triggers>
-                            </Style>
-                        </DataGrid.RowStyle>
-                        <DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding HomeTeam.Name}"
-                                Header="Домашняя команда" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding GuestTeam.Name}"
-                                Header="Гостевая команда" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Coefficient}"
-                                Header="Коэффициент" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Forecast.Name}"
-                                Header="Ставка" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding StartedAt, StringFormat=HH:mm | d MMM yyyy}"
-                                Header="Начало события" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Sport.Name}"
-                                Header="Спорт" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Competition.Name}"
-                                Header="Чемпионат" />
-                        </DataGrid.Columns>
-                        <DataGrid.CellStyle>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="BorderThickness" Value="0" />
-                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                            </Style>
-                        </DataGrid.CellStyle>
-                    </DataGrid>
-                </DataTemplate>
-            </DataGrid.RowDetailsTemplate>-->
         </DataGrid>
     </Grid>
 </Window>

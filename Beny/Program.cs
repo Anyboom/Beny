@@ -25,8 +25,11 @@ namespace Beny
             container.Register<MainViewModel>();
             container.Register<MainWindow>();
 
-            container.Register<BetViewModel>();
+            container.Register<CreateOrUpdateBetViewModel>();
             container.Register<BetWindow>();
+
+            container.Register<ShowBetViewModel>();
+            container.Register<ShowBetWindow>();
 
             container.Verify();
 

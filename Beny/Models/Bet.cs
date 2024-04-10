@@ -23,6 +23,7 @@ namespace Beny.Models
             set
             {
                 _Id = value;
+
                 OnPropertyChanged(nameof(Id));
             }
         }
@@ -77,64 +78,6 @@ namespace Beny.Models
             }
         }
 
-        public string NameType
-        {
-            get
-            {
-                if (IsExpress)
-                {
-                    return "Экспресс";
-                }
-                return "Ординар";
-            }
-        }
-
-        public string NameFootballEvent
-        {
-            get
-            {
-                if (IsExpress)
-                {
-                    return $"Экспресс из {FootballEvents.Count} событий";
-                }
-
-                var footballEvent = FootballEvents.FirstOrDefault();
-
-                return $"{footballEvent?.HomeTeam} - {footballEvent?.GuestTeam}";
-            }
-        }
-
-        public string NameForecasts
-        {
-            get
-            {
-                if (IsExpress)
-                {
-                    StringBuilder stringBuilder = new StringBuilder();
-
-                    foreach (FootballEvent footEvent in FootballEvents.Take(5))
-                    {
-                        stringBuilder.Append(footEvent.Forecast.Name + ", ");
-                    }
-
-                    if (FootballEvents.Count > 5)
-                    {
-                        stringBuilder.Append("...");
-                    }
-                    else
-                    {
-                        stringBuilder.Remove(stringBuilder.Length - 2, 2);
-                    }
-
-                    return stringBuilder.ToString();
-                }
-
-                var footballEvent = FootballEvents.FirstOrDefault();
-
-                return $"{footballEvent?.Forecast.Name}";
-            }
-        }
-
         public Bet()
         {
             FootballEvents.CollectionChanged += (s, e) => Update();
@@ -147,9 +90,6 @@ namespace Beny.Models
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(FootballEvents));
             OnPropertyChanged(nameof(IsExpress));
-            OnPropertyChanged(nameof(NameForecasts));
-            OnPropertyChanged(nameof(NameFootballEvent));
-            OnPropertyChanged(nameof(NameType));
         }
     }
 }

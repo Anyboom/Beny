@@ -20,7 +20,7 @@ namespace Beny.Views.Dialogs
     /// </summary>
     public partial class BetWindow : Window
     {
-        public BetWindow(BetViewModel betViewModel)
+        public BetWindow(CreateOrUpdateBetViewModel betViewModel)
         {
             InitializeComponent();
 

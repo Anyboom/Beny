@@ -22,7 +22,7 @@ using System.Windows.Input;
 
 namespace Beny.ViewModels
 {
-    public class BetViewModel : BindableBase, INotifyDataErrorInfo
+    public class CreateOrUpdateBetViewModel : BindableBase, INotifyDataErrorInfo
     {
         #region [Private variables]
 
@@ -267,7 +267,7 @@ namespace Beny.ViewModels
 
         #endregion
 
-        public BetViewModel(MainRepository mainRepository, ErrorsViewModel errorsViewModel)
+        public CreateOrUpdateBetViewModel(MainRepository mainRepository, ErrorsViewModel errorsViewModel)
         {
             _mainRepository = mainRepository;
 
