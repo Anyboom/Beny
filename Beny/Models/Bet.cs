@@ -31,7 +31,6 @@ namespace Beny.Models
         public ItemObservableCollection<FootballEvent> FootballEvents { get; set; } = new ItemObservableCollection<FootballEvent>();
 
         public DateTime CreatedAt { get; set; }
-
         public float? Coefficient
         {
             get

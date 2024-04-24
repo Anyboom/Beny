@@ -1,5 +1,4 @@
-﻿using Beny.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,11 +15,11 @@ using System.Windows.Shapes;
 namespace Beny.Views.Dialogs
 {
     /// <summary>
-    /// Логика взаимодействия для BetWindow.xaml
+    /// Логика взаимодействия для EditorWindow.xaml
     /// </summary>
-    public partial class CreateOrUpdateBetWindow : Window
+    public partial class EditorWindow : Window
     {
-        public CreateOrUpdateBetWindow()
+        public EditorWindow()
         {
             InitializeComponent();
         }

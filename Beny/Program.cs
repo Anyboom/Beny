@@ -1,11 +1,11 @@
 ﻿using System.Windows;
-using Beny.Interfaces;
+using Beny.Models;
 using Beny.Repositories;
-using Beny.Services;
 using Beny.ViewModels;
 using Beny.Views.Dialogs;
 using Beny.Views.Windows;
 using Microsoft.EntityFrameworkCore;
+using MvvmDialogs;
 using SimpleInjector;
 
 namespace Beny
@@ -17,18 +17,22 @@ namespace Beny
         {
             Container container = new Container();
 
-            container.Register<IDialogService, DialogService>();
+            container.Register<IDialogService>(() => new DialogService(), Lifestyle.Singleton);
 
             container.Register<MainRepository>(Lifestyle.Singleton);
-            container.Register<ErrorsViewModel>();
 
             container.Register<MainViewModel>();
             container.Register<MainWindow>();
 
             container.Register<CreateOrUpdateBetViewModel>();
-            container.Register<BetWindow>();
+            container.Register<CreateOrUpdateBetWindow>();
 
-            container.Register<ShowBetViewModel>();
+            container.Register<EditorViewModel<Team>>();
+            container.Register<EditorViewModel<Sport>>();
+            container.Register<EditorViewModel<Forecast>>();
+            container.Register<EditorViewModel<Competition>>();
+            container.Register<EditorWindow>();
+
             container.Register<ShowBetWindow>();
 
             container.Verify();

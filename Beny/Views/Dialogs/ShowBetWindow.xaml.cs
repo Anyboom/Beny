@@ -20,11 +20,9 @@ namespace Beny.Views.Dialogs
     /// </summary>
     public partial class ShowBetWindow : Window
     {
-        public ShowBetWindow(ShowBetViewModel betViewModel)
+        public ShowBetWindow()
         {
             InitializeComponent();
-
-            DataContext = betViewModel;
         }
     }
 }

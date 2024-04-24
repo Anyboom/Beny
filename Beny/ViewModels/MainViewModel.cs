@@ -1,10 +1,8 @@
 ﻿using Beny.Base;
 using Beny.Commands;
-using Beny.Interfaces;
 using Beny.Models;
 using Beny.Enums;
 using Beny.Repositories;
-using Beny.Services;
 using Beny.Views.Dialogs;
 using Microsoft.EntityFrameworkCore;
 using SimpleInjector;
@@ -19,6 +17,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using Beny.Collections;
+using MvvmDialogs;
+using MvvmDialogs.FrameworkDialogs.MessageBox;
+using Container = SimpleInjector.Container;
 
 namespace Beny.ViewModels
 {
@@ -26,6 +28,7 @@ namespace Beny.ViewModels
     {
         #region [Private variables]
 
+        private Container _container;
         private MainRepository _mainRepository;
         private IDialogService _dialogService;
         private CollectionView _collectionView;
@@ -38,11 +41,47 @@ namespace Beny.ViewModels
         #region [Getters/Setters]
 
         public ObservableCollection<Bet> Bets { get; set; }
-        public DateTime StartRange { get; set; } = DateTime.Now.AddDays(-4);
-        public DateTime EndRange { get; set; } = DateTime.Now.AddDays(4);
         public Bet SelectedBet { get; set; }
-
         public List<string> YearsList { get; set; } = new List<string>();
+
+        public int CountWin
+        {
+            get
+            {
+                if (Bets == null)
+                {
+                    return 0;
+                }
+
+                return Bets.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Win);
+            }
+        }
+
+        public int CountLose
+        {
+            get
+            {
+                if (Bets == null)
+                {
+                    return 0;
+                }
+
+                return Bets.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Lose);
+            }
+        }
+
+        public int CountReturn
+        {
+            get
+            {
+                if (Bets == null)
+                {
+                    return 0;
+                }
+
+                return Bets.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Return);
+            }
+        }
 
         public string SelectedYear
         {
@@ -97,33 +136,65 @@ namespace Beny.ViewModels
         public ICommand DeleteBetCommand { get; set; }
         public ICommand ShowBetCommand { get; set; }
         public ICommand UpdateTableWithDateCommand { get; set; }
+        public ICommand ShowTeamsEditorCommand { get; set; }
 
         #endregion
 
         #region [MainViewModel]
 
-        public MainViewModel(MainRepository mainRepository, IDialogService dialogService)
+        public MainViewModel(Container container)
         {
-            this._mainRepository = mainRepository;
-            this._dialogService = dialogService;
+            _container = container;
+
+            _mainRepository = _container.GetInstance<MainRepository>();
+            _dialogService = _container.GetInstance<IDialogService>();
 
             EditBetCommand = new RelayCommand(EditBet, _ => SelectedBet != null);
             AddBetCommand = new RelayCommand(AddBet);
-            UpdateTableWithDateCommand = new RelayCommand(UpdateTableWithDate, _ => SelectedBet != null);
+            UpdateTableWithDateCommand = new RelayCommand(UpdateTableWithDate);
             LoadedWindowCommand = new RelayCommand(LoadedWindow);
             DeleteBetCommand = new RelayCommand(DeleteBet, _ => SelectedBet != null);
             ShowBetCommand = new RelayCommand(ShowBet, _ => SelectedBet != null);
+            ShowTeamsEditorCommand = new RelayCommand(ShowTeamsEditor);
+        }
+
+        private void ShowTeamsEditor(object obj)
+        {
+            EditorViewModel<Sport> viewModel = _container.GetInstance<EditorViewModel<Sport>>();
+
+            _dialogService.ShowDialog<EditorWindow>(this, viewModel);
         }
 
         private void ShowBet(object obj)
         {
-            _dialogService.ShowDialog<ShowBetWindow, ShowBetViewModel>(x => x.Bet = SelectedBet);
+            ShowBetViewModel viewModel = new ShowBetViewModel()
+            {
+                CurrentBet = SelectedBet
+            };
+
+            _dialogService.Show<ShowBetWindow>(this, viewModel);
         }
 
         private void DeleteBet(object obj)
         {
-            _mainRepository.Bets.Remove(SelectedBet);
-            _mainRepository.SaveChanges();
+            var messageBoxSettings = new MessageBoxSettings()
+            {
+                Button = MessageBoxButton.YesNo,
+                DefaultResult = MessageBoxResult.No,
+                Icon = MessageBoxImage.Question,
+                Caption = $"Ставка #{SelectedBet.Id}",
+                MessageBoxText = "Вы уверены в том, что хотите удалить эту ставку ?"
+            };
+
+            MessageBoxResult result = _dialogService.ShowMessageBox(this, messageBoxSettings);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                _mainRepository.Bets.Remove(SelectedBet);
+                _mainRepository.SaveChanges();
+
+                UpdateProperties();
+            }
         }
 
         private void LoadedWindow(object x)
@@ -139,7 +210,7 @@ namespace Beny.ViewModels
 
             Bets = _mainRepository.Bets.Local.ToObservableCollection();
 
-            _collectionView = (CollectionView)CollectionViewSource.GetDefaultView(Bets);
+            _collectionView = (CollectionView) CollectionViewSource.GetDefaultView(Bets);
 
             _collectionView.SortDescriptions.Add(new SortDescription(nameof(Bet.CreatedAt), ListSortDirection.Descending));
 
@@ -149,32 +220,64 @@ namespace Beny.ViewModels
             SelectedYear = DateTime.Now.Year.ToString();
             SelectedMonth = MonthsList.First(x => x.Key == DateTime.Now.Month);
 
-            OnPropertyChanged(nameof(Bets));
-
             UpdateTableWithDate();
         }
 
         private void UpdateTableWithDate(object x = null)
         {
-            _collectionView.Filter = (x) =>
-            {
-                Bet bet = (Bet)x;
+            _collectionView.Filter = FilterByDateTime;
 
-                bool yearCondition = SelectedYear == "Все" || bet.CreatedAt.Year == Convert.ToInt32(SelectedYear);
-                bool monthCondition = SelectedMonth.Value == "Все" || bet.CreatedAt.Month == SelectedMonth.Key;
+            UpdateProperties();
+        }
 
-                return yearCondition & monthCondition;
-            };
+        private bool FilterByDateTime(object x)
+        {
+            Bet bet = (Bet) x;
+
+            return FilterByDateTime(bet);
+        }
+
+        private bool FilterByDateTime(Bet bet)
+        {
+            bool yearCondition = SelectedYear == "Все" || bet.CreatedAt.Year == Convert.ToInt32(SelectedYear);
+            bool monthCondition = SelectedMonth.Value == "Все" || bet.CreatedAt.Month == SelectedMonth.Key;
+
+            return yearCondition & monthCondition;
         }
 
         private void EditBet(object x)
         {
-            _dialogService.ShowDialog<BetWindow, CreateOrUpdateBetViewModel>(x => x.UpdateBetId = SelectedBet.Id);
+            var viewModel = _container.GetInstance<CreateOrUpdateBetViewModel>();
+
+            viewModel.UpdateBetId = SelectedBet.Id;
+
+            bool? result = _dialogService.ShowDialog<CreateOrUpdateBetWindow>(this, viewModel);
+
+            if (result == true)
+            {
+                UpdateProperties();
+            }
         }
 
         private void AddBet(object x)
         {
-            _dialogService.ShowDialog<BetWindow, CreateOrUpdateBetViewModel>();
+            var viewModel = _container.GetInstance<CreateOrUpdateBetViewModel>();
+            
+            bool? result = _dialogService.ShowDialog<CreateOrUpdateBetWindow>(this, viewModel);
+
+            if (result == true)
+            {
+                UpdateProperties();
+            }
+        }
+
+        private void UpdateProperties()
+        {
+            OnPropertyChanged(nameof(Bets));
+
+            OnPropertyChanged(nameof(CountLose));
+            OnPropertyChanged(nameof(CountReturn));
+            OnPropertyChanged(nameof(CountWin));
         }
 
         #endregion

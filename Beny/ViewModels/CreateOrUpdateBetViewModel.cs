@@ -19,10 +19,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Beny.Collections;
+using MvvmDialogs;
 
 namespace Beny.ViewModels
 {
-    public class CreateOrUpdateBetViewModel : BindableBase, INotifyDataErrorInfo
+    public class CreateOrUpdateBetViewModel : BindableBase, INotifyDataErrorInfo, IModalDialogViewModel
     {
         #region [Private variables]
 
@@ -267,11 +269,13 @@ namespace Beny.ViewModels
 
         #endregion
 
-        public CreateOrUpdateBetViewModel(MainRepository mainRepository, ErrorsViewModel errorsViewModel)
+        #region CreateOrUpdateBetViewModel
+
+        public CreateOrUpdateBetViewModel(MainRepository mainRepository)
         {
             _mainRepository = mainRepository;
 
-            _errorsViewModel = errorsViewModel;
+            _errorsViewModel = new ErrorsViewModel();
 
             _errorsViewModel.ErrorsChanged += (s, e) =>
             {
@@ -295,13 +299,13 @@ namespace Beny.ViewModels
             AllHours = Enumerable.Range(0, 24).ToArray();
 
             CreateFootballEventCommand = new RelayCommand(SaveFootballEvent, x => CanCreate);
-            EditFootballEventCommand = new RelayCommand(SaveFootballEvent, x => CanCreate);
+            EditFootballEventCommand = new RelayCommand(SaveFootballEvent, x => CanCreate && SelectedFootballEvent != null);
             ClearFootballEventCommand = new RelayCommand(ClearFootballEvent);
             DeleteFootballEventCommand = new RelayCommand(DeleteFootballEvent);
             LoadedWindowCommand = new RelayCommand(LoadedWindow);
             ClosedWindowCommand = new RelayCommand(ClosedWindow);
-            SaveBetCommand = new RelayCommand(SaveBet);
-            UpdateFootballEventStatusCommand = new RelayCommand(UpdateFootballEventStatus);
+            SaveBetCommand = new RelayCommand(SaveBet, x => CurrentBet?.FootballEvents.Count > 0);
+            UpdateFootballEventStatusCommand = new RelayCommand(UpdateFootballEventStatus, x => SelectedFootballEvent != null);
 
             HomeTeam = "Ливерпуль";
             GuestTeam = "Манчестер Сити";
@@ -309,14 +313,16 @@ namespace Beny.ViewModels
             Competition = "Англия. Премьер-лига";
             Coefficient = "1,78";
             Sport = "Футбол";
+
+            Date = DateTime.Now;
         }
 
         private void SaveFootballEvent(object x)
         {
-            Competition? competition = _mainRepository.Competitions.Local.SingleOrDefault(x => x.Name == Competition);
-
             bool updateFootballEvent = x != null,
                  addFootballEvent = x == null;
+
+            Competition? competition = _mainRepository.Competitions.Local.SingleOrDefault(x => x.Name == Competition);
 
             if (competition == null)
             {
@@ -326,6 +332,7 @@ namespace Beny.ViewModels
                 };
 
                 _mainRepository.Competitions.Local.Add(competition);
+
                 CompetitionList.Add(competition.Name);
             }
 
@@ -339,6 +346,7 @@ namespace Beny.ViewModels
                 };
 
                 _mainRepository.Sports.Local.Add(sport);
+
                 SportList.Add(sport.Name);
             }
 
@@ -352,6 +360,7 @@ namespace Beny.ViewModels
                 };
 
                 _mainRepository.Forecasts.Local.Add(forecast);
+
                 ForecastList.Add(forecast.Name);
             }
 
@@ -365,6 +374,7 @@ namespace Beny.ViewModels
                 };
 
                 _mainRepository.Teams.Local.Add(homeTeam);
+
                 TeamList.Add(homeTeam.Name);
             }
 
@@ -388,7 +398,6 @@ namespace Beny.ViewModels
                 footballEvent = SelectedFootballEvent;
             }
 
-            footballEvent.CreatedAt = DateTime.Now;
             footballEvent.StartedAt = new DateTime(Date.Year, Date.Month, Date.Day, Hour, Minute, 0);
             footballEvent.Coefficient = float.Parse(Coefficient);
             footballEvent.FootballEventStatus = FootballEventStatus.NotCalculated;
@@ -400,6 +409,7 @@ namespace Beny.ViewModels
 
             if (addFootballEvent)
             {
+                footballEvent.CreatedAt = DateTime.Now;
                 CurrentBet.FootballEvents.Add(footballEvent);
             }
 
@@ -433,11 +443,6 @@ namespace Beny.ViewModels
 
         private void SaveBet(object x)
         {
-            if (CurrentBet.FootballEvents.Count == 0)
-            {
-                return;
-            }
-
             if (UpdateBetId == -1)
             {
                 _mainRepository.Add(CurrentBet);
@@ -445,12 +450,12 @@ namespace Beny.ViewModels
 
             _mainRepository.SaveChanges();
 
-            (x as Window).Close();
+            DialogResult = true;
         }
 
         private void LoadedWindow(object x)
         {
-            CurrentBet = _mainRepository.Bets.Find(UpdateBetId) ?? new Bet() { CreatedAt = DateTime.Now};
+            CurrentBet = _mainRepository.Bets.Find(UpdateBetId) ?? new Bet() { CreatedAt = DateTime.Now, FootballEvents = new ItemObservableCollection<FootballEvent>()};
 
             OnPropertyChanged(nameof(CurrentBet));
         }
@@ -478,6 +483,26 @@ namespace Beny.ViewModels
             }
         }
 
+        #endregion
+
+        #region [IModalDialogViewModel]
+
+        private bool? _dialogResult = false;
+
+        public bool? DialogResult
+        {
+            get
+            {
+                return _dialogResult;
+            }
+            set
+            {
+                _dialogResult = value;
+            }
+        }
+
+        #endregion
+
         #region [INotifyDataErrorInfo]
 
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
@@ -485,6 +510,7 @@ namespace Beny.ViewModels
         public bool HasErrors => _errorsViewModel.HasErrors;
 
         public bool CanCreate => HasErrors == false;
+
 
         public bool IsValidatedForm = false;
         public IEnumerable GetErrors(string? propertyName)

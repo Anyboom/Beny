@@ -8,12 +8,15 @@
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:Beny.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:md="https://github.com/fantasticfiasco/mvvm-dialogs"
     xmlns:viewModels="clr-namespace:Beny.ViewModels"
     Title="MainWindow"
     Width="800"
     Height="450"
     d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel}"
+    md:DialogServiceViews.IsRegistered="True"
     Language="Ru"
+    WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -21,65 +24,104 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <Window.Resources>
-        <converters:IsExpressToStringConverter x:Key="IsExpressToStringConverter"></converters:IsExpressToStringConverter>
-        <converters:ListFootballEventsToString x:Key="ListFootballEventsToString"></converters:ListFootballEventsToString>
-        <converters:ListForecastsToString x:Key="ListForecastsToString"></converters:ListForecastsToString>
-        <converters:ListFootballEventsToColumnStrings x:Key="ListFootballEventsToColumnStrings"></converters:ListFootballEventsToColumnStrings>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Styles/ComboBox.xaml" />
+                <ResourceDictionary Source="../../Styles/Colors.xaml" />
+                <ResourceDictionary Source="../../Styles/DataGrid.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:IsExpressToStringConverter x:Key="IsExpressToStringConverter" />
+            <converters:ListFootballEventsToString x:Key="ListFootballEventsToString" />
+            <converters:ListForecastsToString x:Key="ListForecastsToString" />
+            <converters:ListFootballEventsToColumnStrings x:Key="ListFootballEventsToColumnStrings" />
+        </ResourceDictionary>
     </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
+            <RowDefinition Height="35" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <StackPanel
-            Grid.Row="0"
-            Margin="0,0,0,5"
-            Orientation="Horizontal">
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Text="Год: " />
-            <ComboBox Width="100"
-                      Margin="5,0,5,0"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      MaxDropDownHeight="150"
-                      ItemsSource="{Binding YearsList}"
-                      SelectedItem="{Binding SelectedYear}"
-                      Focusable="False">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="SelectionChanged">
-                        <i:InvokeCommandAction Command="{Binding UpdateTableWithDateCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </ComboBox>
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Text="Месяц: " />
-            <ComboBox Width="100"
-                Margin="5,0,0,0"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                MaxDropDownHeight="150"
-                ItemsSource="{Binding MonthsList}"
-                DisplayMemberPath="Value"
-                SelectedItem="{Binding SelectedMonth}"
-                Focusable="False">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="SelectionChanged">
-                        <i:InvokeCommandAction Command="{Binding UpdateTableWithDateCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </ComboBox>
-        </StackPanel>
-        <DataGrid Style="{DynamicResource DataGridStyle1}"
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="Год: " />
+                <ComboBox
+                    Width="100"
+                    Margin="5,0,5,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Focusable="False"
+                    ItemsSource="{Binding YearsList}"
+                    MaxDropDownHeight="150"
+                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                    SelectedItem="{Binding SelectedYear}"
+                    Style="{StaticResource ComboBoxFlatStyle}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <i:InvokeCommandAction Command="{Binding UpdateTableWithDateCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ComboBox>
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="Месяц: " />
+                <ComboBox
+                    Width="100"
+                    Margin="5,0,10,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    DisplayMemberPath="Value"
+                    Focusable="False"
+                    ItemsSource="{Binding MonthsList}"
+                    MaxDropDownHeight="150"
+                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                    SelectedItem="{Binding SelectedMonth}"
+                    Style="{StaticResource ComboBoxFlatStyle}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <i:InvokeCommandAction Command="{Binding UpdateTableWithDateCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ComboBox>
+
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,0,10,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="{Binding CountWin, StringFormat=В: {0}}" />
+                <TextBlock
+                    Margin="0,0,10,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="{Binding CountLose, StringFormat=П: {0}}" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="{Binding CountReturn, StringFormat=В: {0}}" />
+            </StackPanel>
+        </Grid>
+        <DataGrid
             Grid.Row="1"
             AutoGenerateColumns="False"
             ColumnWidth="*"
+            HeadersVisibility="Column"
             IsReadOnly="True"
             ItemsSource="{Binding Bets}"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            ScrollViewer.VerticalScrollBarVisibility="Hidden"
             SelectedValue="{Binding SelectedBet}"
             SelectionMode="Single"
             SelectionUnit="FullRow">
@@ -87,16 +129,16 @@
                 <Style TargetType="{x:Type DataGridRow}">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.NotCalculated}">
-                            <Setter Property="Background" Value="Azure" />
+                            <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Win}">
-                            <Setter Property="Background" Value="Green" />
+                            <Setter Property="Background" Value="{StaticResource GreenBrush}" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Return}">
-                            <Setter Property="Background" Value="Blue" />
+                            <Setter Property="Background" Value="{StaticResource BlueBrush}" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Lose}">
-                            <Setter Property="Background" Value="Red" />
+                            <Setter Property="Background" Value="{StaticResource RedBrush}" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -109,38 +151,57 @@
                     <MenuItem Command="{Binding ShowBetCommand}" Header="Посмотреть" />
                     <Separator />
                     <MenuItem Command="{Binding DeleteBetCommand}" Header="Удалить" />
+                    <Separator />
+                    <MenuItem Header="Редакторы">
+                        <MenuItem Command="{Binding ShowTeamsEditorCommand}" Header="Команды" />
+                        <MenuItem Header="Спорт" />
+                        <MenuItem Header="Соревнования" />
+                        <MenuItem Header="Ставки" />
+                    </MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Width="5*" Binding="{Binding Id}" Header="Ид" />
-                <DataGridTextColumn Width="17*" Binding="{Binding CreatedAt, StringFormat=HH:mm | d MMM yyyy}" Header="Дата" />
-                <DataGridTextColumn Width="10*" Binding="{Binding IsExpress, Converter={StaticResource IsExpressToStringConverter}}" Header="Вид"></DataGridTextColumn>
-                <DataGridTextColumn Width="40*" CanUserSort="False" Binding="{Binding FootballEvents, Converter={StaticResource ListFootballEventsToString}, ConverterParameter=5}" Header="Название события">
+                <DataGridTextColumn
+                    Width="35"
+                    Binding="{Binding Id}"
+                    Header="Ид" />
+                <DataGridTextColumn
+                    Width="115"
+                    Binding="{Binding CreatedAt, StringFormat=HH:mm | d MMM yyyy}"
+                    Header="Дата создания" />
+                <DataGridTextColumn
+                    Width="75"
+                    Binding="{Binding FootballEvents.Count}"
+                    Header="Количество" />
+                <DataGridTextColumn
+                    Width="75"
+                    Binding="{Binding IsExpress, Converter={StaticResource IsExpressToStringConverter}}"
+                    Header="Вид" />
+                <DataGridTextColumn
+                    Binding="{Binding FootballEvents, Converter={StaticResource ListFootballEventsToString}, ConverterParameter=5}"
+                    CanUserSort="False"
+                    Header="Название события">
                     <DataGridTextColumn.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderThickness" Value="0" />
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Style BasedOn="{StaticResource CustomDataGridCell}" TargetType="DataGridCell">
                             <Setter Property="ToolTip" Value="{Binding FootballEvents, Converter={StaticResource ListFootballEventsToColumnStrings}, ConverterParameter=20}" />
                         </Style>
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Width="20*" CanUserSort="False" Binding="{Binding FootballEvents, Converter={StaticResource ListForecastsToString}, ConverterParameter=5}" Header="Ставка">
+                <DataGridTextColumn
+                    Binding="{Binding FootballEvents, Converter={StaticResource ListForecastsToString}, ConverterParameter=5}"
+                    CanUserSort="False"
+                    Header="Ставка">
                     <DataGridTextColumn.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderThickness" Value="0" />
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Style BasedOn="{StaticResource CustomDataGridCell}" TargetType="DataGridCell">
                             <Setter Property="ToolTip" Value="{Binding FootballEvents, Converter={StaticResource ListForecastsToString}, ConverterParameter=10}" />
                         </Style>
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Width="15*" Binding="{Binding Coefficient, StringFormat={}{0:0.##}}" Header="Коэффициент" />
+                <DataGridTextColumn
+                    Width="55"
+                    Binding="{Binding Coefficient, StringFormat={}{0:0.##}}"
+                    Header="Коэф" />
             </DataGrid.Columns>
-            <DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="BorderThickness" Value="0" />
-                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                </Style>
-            </DataGrid.CellStyle>
         </DataGrid>
     </Grid>
 </Window>

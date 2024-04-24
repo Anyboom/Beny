@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MvvmDialogs;
 
 namespace Beny.ViewModels
 {
     public class ShowBetViewModel : BindableBase
     {
-        public Bet Bet { get; set; }
+        public Bet CurrentBet { get; set; }
     }
 }
