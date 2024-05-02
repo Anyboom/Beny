@@ -85,9 +85,9 @@ namespace Beny.Models
 
         private void Update()
         {
+            OnPropertyChanged(nameof(FootballEvents));
             OnPropertyChanged(nameof(Coefficient));
             OnPropertyChanged(nameof(Status));
-            OnPropertyChanged(nameof(FootballEvents));
             OnPropertyChanged(nameof(IsExpress));
         }
     }

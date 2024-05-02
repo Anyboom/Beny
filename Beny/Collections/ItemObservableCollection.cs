@@ -36,7 +36,6 @@ namespace Beny.Collections
 
         private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs args)
         {
-
             ItemPropertyChanged?.Invoke(this, new PropertyChangedEventArgs(args.PropertyName));
         }
     }

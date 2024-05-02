@@ -24,13 +24,14 @@ namespace Beny
             container.Register<MainViewModel>();
             container.Register<MainWindow>();
 
-            container.Register<CreateOrUpdateBetViewModel>();
+            container.Register<EditBetViewModel>();
             container.Register<CreateOrUpdateBetWindow>();
 
-            container.Register<EditorViewModel<Team>>();
             container.Register<EditorViewModel<Sport>>();
-            container.Register<EditorViewModel<Forecast>>();
             container.Register<EditorViewModel<Competition>>();
+            container.Register<EditorViewModel<Team>>();
+            container.Register<EditorViewModel<Forecast>>();
+
             container.Register<EditorWindow>();
 
             container.Register<ShowBetWindow>();

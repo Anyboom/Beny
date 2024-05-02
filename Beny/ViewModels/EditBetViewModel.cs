@@ -24,13 +24,13 @@ using MvvmDialogs;
 
 namespace Beny.ViewModels
 {
-    public class CreateOrUpdateBetViewModel : BindableBase, INotifyDataErrorInfo, IModalDialogViewModel
+    public class EditBetViewModel : BindableBase, INotifyDataErrorInfo, IModalDialogViewModel
     {
         #region [Private variables]
 
         private readonly ErrorsViewModel _errorsViewModel;
         private readonly MainRepository _mainRepository;
-
+        private readonly IDialogService _dialogService;
         private string _homeTeam;
         private string _guestTeam;
         private string _competition;
@@ -271,9 +271,11 @@ namespace Beny.ViewModels
 
         #region CreateOrUpdateBetViewModel
 
-        public CreateOrUpdateBetViewModel(MainRepository mainRepository)
+        public EditBetViewModel(MainRepository mainRepository, IDialogService dialogService)
         {
             _mainRepository = mainRepository;
+
+            _dialogService = dialogService;
 
             _errorsViewModel = new ErrorsViewModel();
 
@@ -290,10 +292,10 @@ namespace Beny.ViewModels
             mainRepository.Teams.Load();
             mainRepository.FootballEvents.Load();
 
-            ForecastList = new ObservableCollection<string>(mainRepository.Forecasts.Local.Select(x => x.Name));
-            SportList = new ObservableCollection<string>(mainRepository.Sports.Local.Select(x => x.Name));
-            CompetitionList = new ObservableCollection<string>(mainRepository.Competitions.Local.Select(x => x.Name));
-            TeamList = new ObservableCollection<string>(mainRepository.Teams.Local.Select(x => x.Name));
+            ForecastList = new ObservableCollection<string>(mainRepository.Forecasts.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
+            SportList = new ObservableCollection<string>(mainRepository.Sports.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
+            CompetitionList = new ObservableCollection<string>(mainRepository.Competitions.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
+            TeamList = new ObservableCollection<string>(mainRepository.Teams.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
 
             AllMinutes = Enumerable.Range(0, 60).ToArray();
             AllHours = Enumerable.Range(0, 24).ToArray();
@@ -335,6 +337,12 @@ namespace Beny.ViewModels
 
                 CompetitionList.Add(competition.Name);
             }
+            else
+            {
+                competition.DeletedAt = null;
+
+                CompetitionList.Add(competition.Name);
+            }
 
             Sport? sport = _mainRepository.Sports.Local.SingleOrDefault(x => x.Name == Sport);
 
@@ -346,6 +354,12 @@ namespace Beny.ViewModels
                 };
 
                 _mainRepository.Sports.Local.Add(sport);
+
+                SportList.Add(sport.Name);
+            }
+            else
+            {
+                sport.DeletedAt = null;
 
                 SportList.Add(sport.Name);
             }
@@ -363,6 +377,12 @@ namespace Beny.ViewModels
 
                 ForecastList.Add(forecast.Name);
             }
+            else
+            {
+                forecast.DeletedAt = null;
+
+                ForecastList.Add(forecast.Name);
+            }
 
             Team? homeTeam = _mainRepository.Teams.Local.SingleOrDefault(x => x.Name == HomeTeam);
 
@@ -377,6 +397,12 @@ namespace Beny.ViewModels
 
                 TeamList.Add(homeTeam.Name);
             }
+            else
+            {
+                homeTeam.DeletedAt = null;
+
+                TeamList.Add(homeTeam.Name);
+            }
 
             Team? guestTeam = _mainRepository.Teams.Local.SingleOrDefault(x => x.Name == GuestTeam);
 
@@ -388,6 +414,12 @@ namespace Beny.ViewModels
                 };
 
                 _mainRepository.Teams.Local.Add(guestTeam);
+                TeamList.Add(guestTeam.Name);
+            }
+            else
+            {
+                guestTeam.DeletedAt = null;
+
                 TeamList.Add(guestTeam.Name);
             }
 
@@ -451,6 +483,8 @@ namespace Beny.ViewModels
             _mainRepository.SaveChanges();
 
             DialogResult = true;
+
+            _dialogService.Close(this);
         }
 
         private void LoadedWindow(object x)

@@ -9,7 +9,8 @@
     xmlns:local="clr-namespace:Beny.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="https://github.com/fantasticfiasco/mvvm-dialogs"
-    xmlns:viewModels="clr-namespace:Beny.ViewModels"
+    xmlns:viewModels="clr-namespace:Beny.ViewModels" xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime"
     Title="MainWindow"
     Width="800"
     Height="450"
@@ -125,7 +126,7 @@
             SelectedValue="{Binding SelectedBet}"
             SelectionMode="Single"
             SelectionUnit="FullRow">
-            <DataGrid.ItemContainerStyle>
+            <!--<DataGrid.ItemContainerStyle>
                 <Style TargetType="{x:Type DataGridRow}">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.NotCalculated}">
@@ -142,7 +143,25 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </DataGrid.ItemContainerStyle>
+            </DataGrid.ItemContainerStyle>-->
+            <DataGrid.RowStyle>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.NotCalculated}">
+                            <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Win}">
+                            <Setter Property="Background" Value="{StaticResource GreenBrush}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Return}">
+                            <Setter Property="Background" Value="{StaticResource BlueBrush}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Lose}">
+                            <Setter Property="Background" Value="{StaticResource RedBrush}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="{Binding AddBetCommand}" Header="Добавить" />
@@ -154,9 +173,9 @@
                     <Separator />
                     <MenuItem Header="Редакторы">
                         <MenuItem Command="{Binding ShowTeamsEditorCommand}" Header="Команды" />
-                        <MenuItem Header="Спорт" />
-                        <MenuItem Header="Соревнования" />
-                        <MenuItem Header="Ставки" />
+                        <MenuItem Command="{Binding ShowSportsEditorCommand}" Header="Спорт" />
+                        <MenuItem Command="{Binding ShowCompetitionsEditorCommand}" Header="Соревнования" />
+                        <MenuItem Command="{Binding ShowForecastsEditorCommand}" Header="Ставки" />
                     </MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>

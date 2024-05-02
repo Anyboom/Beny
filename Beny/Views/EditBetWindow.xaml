@@ -266,13 +266,7 @@
                 Padding="50,5"
                 Command="{Binding SaveBetCommand}"
                 Content="Сохранить"
-                Style="{StaticResource MainButton}">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Click">
-                        <i:CallMethodAction MethodName="Close" TargetObject="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Button>
+                Style="{StaticResource MainButton}" />
         </WrapPanel>
     </Grid>
 </Window>

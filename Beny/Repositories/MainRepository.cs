@@ -17,10 +17,12 @@ namespace Beny.Repositories
         public DbSet<Competition> Competitions { get; set; } = null!;
         public DbSet<Sport> Sports { get; set; } = null!;
         public DbSet<Forecast> Forecasts { get; set; } = null!;
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=Beny.db");
+            optionsBuilder.UseSqlite("Data Source=Beny.db;");
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Team>().HasIndex(p => p.Name).IsUnique();

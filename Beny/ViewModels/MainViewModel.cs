@@ -18,9 +18,11 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using Beny.Collections;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MvvmDialogs;
 using MvvmDialogs.FrameworkDialogs.MessageBox;
 using Container = SimpleInjector.Container;
+using System.Windows.Documents;
 
 namespace Beny.ViewModels
 {
@@ -28,9 +30,9 @@ namespace Beny.ViewModels
     {
         #region [Private variables]
 
-        private Container _container;
-        private MainRepository _mainRepository;
-        private IDialogService _dialogService;
+        private readonly Container _container;
+        private readonly MainRepository _mainRepository;
+        private readonly IDialogService _dialogService;
         private CollectionView _collectionView;
 
         private string _selectedYear;
@@ -44,42 +46,27 @@ namespace Beny.ViewModels
         public Bet SelectedBet { get; set; }
         public List<string> YearsList { get; set; } = new List<string>();
 
-        public int CountWin
+        public int? CountWin
         {
             get
             {
-                if (Bets == null)
-                {
-                    return 0;
-                }
-
-                return Bets.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Win);
+                return Bets?.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Win);
             }
         }
 
-        public int CountLose
+        public int? CountLose
         {
             get
             {
-                if (Bets == null)
-                {
-                    return 0;
-                }
-
-                return Bets.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Lose);
+                return Bets?.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Lose);
             }
         }
 
-        public int CountReturn
+        public int? CountReturn
         {
             get
             {
-                if (Bets == null)
-                {
-                    return 0;
-                }
-
-                return Bets.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Return);
+                return Bets?.Where(FilterByDateTime).Count(x => x.Status == FootballEventStatus.Return);
             }
         }
 
@@ -137,6 +124,9 @@ namespace Beny.ViewModels
         public ICommand ShowBetCommand { get; set; }
         public ICommand UpdateTableWithDateCommand { get; set; }
         public ICommand ShowTeamsEditorCommand { get; set; }
+        public ICommand ShowSportsEditorCommand { get; set; }
+        public ICommand ShowForecastsEditorCommand { get; set; }
+        public ICommand ShowCompetitionsEditorCommand { get; set; }
 
         #endregion
 
@@ -156,13 +146,57 @@ namespace Beny.ViewModels
             DeleteBetCommand = new RelayCommand(DeleteBet, _ => SelectedBet != null);
             ShowBetCommand = new RelayCommand(ShowBet, _ => SelectedBet != null);
             ShowTeamsEditorCommand = new RelayCommand(ShowTeamsEditor);
+            ShowSportsEditorCommand = new RelayCommand(ShowSportsEditor);
+            ShowForecastsEditorCommand = new RelayCommand(ShowForecastsEditor);
+            ShowCompetitionsEditorCommand = new RelayCommand(ShowCompetitionsEditor);
+        }
+
+        private void ShowCompetitionsEditor(object obj)
+        {
+            EditorViewModel<Competition> viewModel = _container.GetInstance<EditorViewModel<Competition>>();
+
+            bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
+
+            if (result == true)
+            {
+                UpdateProperties();
+            }
+        }
+
+        private void ShowForecastsEditor(object obj)
+        {
+            EditorViewModel<Forecast> viewModel = _container.GetInstance<EditorViewModel<Forecast>>();
+
+            bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
+
+            if (result == true)
+            {
+                UpdateProperties();
+            }
+        }
+
+        private void ShowSportsEditor(object obj)
+        {
+            EditorViewModel<Sport> viewModel = _container.GetInstance<EditorViewModel<Sport>>();
+
+            bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
+
+            if (result == true)
+            {
+                UpdateProperties();
+            }
         }
 
         private void ShowTeamsEditor(object obj)
         {
-            EditorViewModel<Sport> viewModel = _container.GetInstance<EditorViewModel<Sport>>();
+            EditorViewModel<Team> viewModel = _container.GetInstance<EditorViewModel<Team>>();
 
-            _dialogService.ShowDialog<EditorWindow>(this, viewModel);
+            bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
+
+            if (result == true)
+            {
+                UpdateProperties();
+            }
         }
 
         private void ShowBet(object obj)
@@ -197,27 +231,28 @@ namespace Beny.ViewModels
             }
         }
 
-        private void LoadedWindow(object x)
+        private async void LoadedWindow(object x)
         {
-            _mainRepository.Database.EnsureCreated();
+            await _mainRepository.Database.EnsureCreatedAsync();
 
-            _mainRepository.Bets.Load();
-            _mainRepository.FootballEvents.Load();
-            _mainRepository.Teams.Load();
-            _mainRepository.Forecasts.Load();
-            _mainRepository.Sports.Load();
-            _mainRepository.Competitions.Load();
+            await _mainRepository.Bets.LoadAsync();
+            await _mainRepository.FootballEvents.LoadAsync();
+            await _mainRepository.Teams.LoadAsync();
+            await _mainRepository.Forecasts.LoadAsync();
+            await _mainRepository.Sports.LoadAsync();
+            await _mainRepository.Competitions.LoadAsync();
 
             Bets = _mainRepository.Bets.Local.ToObservableCollection();
 
-            _collectionView = (CollectionView) CollectionViewSource.GetDefaultView(Bets);
+            _collectionView = (CollectionView)CollectionViewSource.GetDefaultView(Bets);
 
             _collectionView.SortDescriptions.Add(new SortDescription(nameof(Bet.CreatedAt), ListSortDirection.Descending));
 
             YearsList.Add("Все");
             YearsList.AddRange(_mainRepository.FootballEvents.Select(x => x.CreatedAt.Year.ToString()).Distinct());
 
-            SelectedYear = DateTime.Now.Year.ToString();
+            SelectedYear = (YearsList.Count > 1) ? DateTime.Now.Year.ToString() : YearsList[0];
+
             SelectedMonth = MonthsList.First(x => x.Key == DateTime.Now.Month);
 
             UpdateTableWithDate();
@@ -227,7 +262,12 @@ namespace Beny.ViewModels
         {
             _collectionView.Filter = FilterByDateTime;
 
-            UpdateProperties();
+
+            OnPropertyChanged(nameof(Bets));
+
+            OnPropertyChanged(nameof(CountLose));
+            OnPropertyChanged(nameof(CountReturn));
+            OnPropertyChanged(nameof(CountWin));
         }
 
         private bool FilterByDateTime(object x)
@@ -242,12 +282,12 @@ namespace Beny.ViewModels
             bool yearCondition = SelectedYear == "Все" || bet.CreatedAt.Year == Convert.ToInt32(SelectedYear);
             bool monthCondition = SelectedMonth.Value == "Все" || bet.CreatedAt.Month == SelectedMonth.Key;
 
-            return yearCondition & monthCondition;
+            return yearCondition && monthCondition;
         }
 
         private void EditBet(object x)
         {
-            var viewModel = _container.GetInstance<CreateOrUpdateBetViewModel>();
+            var viewModel = _container.GetInstance<EditBetViewModel>();
 
             viewModel.UpdateBetId = SelectedBet.Id;
 
@@ -261,7 +301,7 @@ namespace Beny.ViewModels
 
         private void AddBet(object x)
         {
-            var viewModel = _container.GetInstance<CreateOrUpdateBetViewModel>();
+            var viewModel = _container.GetInstance<EditBetViewModel>();
             
             bool? result = _dialogService.ShowDialog<CreateOrUpdateBetWindow>(this, viewModel);
 
@@ -278,6 +318,9 @@ namespace Beny.ViewModels
             OnPropertyChanged(nameof(CountLose));
             OnPropertyChanged(nameof(CountReturn));
             OnPropertyChanged(nameof(CountWin));
+
+            _collectionView.Refresh();
+
         }
 
         #endregion

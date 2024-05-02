@@ -1,4 +1,5 @@
 ﻿using Beny.Base;
+using Beny.Models.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Beny.Models
 {
-    public class Sport : BindableBase
+    public class Sport : BindableBase, IDictionaryModel
     {
         private int _id;
         public int Id
@@ -18,8 +19,8 @@ namespace Beny.Models
             }
             set
             {
-                OnPropertyChanged(nameof(Id));
                 _id = value;
+                OnPropertyChanged(nameof(Id));
             }
         }
 
@@ -32,8 +33,22 @@ namespace Beny.Models
             }
             set
             {
-                OnPropertyChanged(nameof(Name));
                 _name = value;
+                OnPropertyChanged(nameof(Name));
+            }
+        }
+
+        private DateTime? _deletedAt;
+        public DateTime? DeletedAt
+        {
+            get
+            {
+                return _deletedAt;
+            }
+            set
+            {
+                _deletedAt = value;
+                OnPropertyChanged(nameof(DeletedAt));
             }
         }
 

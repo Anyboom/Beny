@@ -2,6 +2,7 @@
     x:Class="Beny.Views.Dialogs.EditorWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:Beny.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +10,13 @@
     Width="450"
     Height="350"
     ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closed">
+            <i:InvokeCommandAction Command="{Binding ClosedWindowCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -17,6 +24,8 @@
                 <ResourceDictionary Source="../../Styles/TextBox.xaml" />
                 <ResourceDictionary Source="../../Styles/Button.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <converters:IsNullConverter x:Key="IsNullConverter" />
         </ResourceDictionary>
     </Window.Resources>
     <Grid Margin="10">
@@ -39,7 +48,7 @@
                 <TextBox
                     Padding="3,5"
                     Style="{StaticResource MainTextBox}"
-                    Text="{Binding InputItem}" />
+                    Text="{Binding InputItem, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1">
@@ -55,6 +64,11 @@
                 ItemsSource="{Binding Items}"
                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
                 SelectedValue="{Binding SelectedItem}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
                 <ListBox.Style>
                     <Style TargetType="{x:Type ListBox}">
                         <Setter Property="SnapsToDevicePixels" Value="true" />
@@ -137,24 +151,21 @@
                     <Button
                         Margin="0,0,0,5"
                         Padding="3,5"
+                        Command="{Binding EditItemCommand}"
                         Content="Редактировать"
                         Style="{StaticResource MainButton}" />
                     <Button
                         Padding="3,5"
+                        Command="{Binding RemoveItemCommand}"
                         Content="Удалить"
                         Style="{StaticResource MainButton}" />
                 </StackPanel>
                 <StackPanel Grid.Row="1" VerticalAlignment="Bottom">
                     <Button
                         Padding="3,5"
+                        Command="{Binding SaveItemsCommand}"
                         Content="Сохранить все изменения"
-                        Style="{StaticResource MainButton}">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <i:CallMethodAction MethodName="Close" TargetObject="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" />
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </Button>
+                        Style="{StaticResource MainButton}" />
                 </StackPanel>
             </Grid>
         </Grid>
