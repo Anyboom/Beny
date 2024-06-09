@@ -9,7 +9,7 @@ using System.Windows.Data;
 
 namespace Beny.Converters
 {
-    class IsExpressToStringConverter : IValueConverter
+    class BooleanTypeFootballEventToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

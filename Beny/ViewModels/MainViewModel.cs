@@ -44,7 +44,7 @@ namespace Beny.ViewModels
 
         public ObservableCollection<Bet> Bets { get; set; }
         public Bet SelectedBet { get; set; }
-        public List<string> YearsList { get; set; } = new List<string>();
+        public List<string> YearsList { get; set; } = ["Все"];
 
         public int? CountWin
         {
@@ -127,6 +127,7 @@ namespace Beny.ViewModels
         public ICommand ShowSportsEditorCommand { get; set; }
         public ICommand ShowForecastsEditorCommand { get; set; }
         public ICommand ShowCompetitionsEditorCommand { get; set; }
+        public ICommand ShowTagsEditorCommand { get; set; }
 
         #endregion
 
@@ -146,9 +147,22 @@ namespace Beny.ViewModels
             DeleteBetCommand = new RelayCommand(DeleteBet, _ => SelectedBet != null);
             ShowBetCommand = new RelayCommand(ShowBet, _ => SelectedBet != null);
             ShowTeamsEditorCommand = new RelayCommand(ShowTeamsEditor);
+            ShowTagsEditorCommand = new RelayCommand(ShowTagsEditor);
             ShowSportsEditorCommand = new RelayCommand(ShowSportsEditor);
             ShowForecastsEditorCommand = new RelayCommand(ShowForecastsEditor);
             ShowCompetitionsEditorCommand = new RelayCommand(ShowCompetitionsEditor);
+        }
+
+        private void ShowTagsEditor(object obj)
+        {
+            EditorViewModel<Tag> viewModel = _container.GetInstance<EditorViewModel<Tag>>();
+
+            bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
+
+            if (result == true)
+            {
+                UpdateProperties();
+            }
         }
 
         private void ShowCompetitionsEditor(object obj)
@@ -233,22 +247,12 @@ namespace Beny.ViewModels
 
         private async void LoadedWindow(object x)
         {
-            await _mainRepository.Database.EnsureCreatedAsync();
-
-            await _mainRepository.Bets.LoadAsync();
-            await _mainRepository.FootballEvents.LoadAsync();
-            await _mainRepository.Teams.LoadAsync();
-            await _mainRepository.Forecasts.LoadAsync();
-            await _mainRepository.Sports.LoadAsync();
-            await _mainRepository.Competitions.LoadAsync();
-
             Bets = _mainRepository.Bets.Local.ToObservableCollection();
 
-            _collectionView = (CollectionView)CollectionViewSource.GetDefaultView(Bets);
+            _collectionView = (CollectionView) CollectionViewSource.GetDefaultView(Bets);
 
             _collectionView.SortDescriptions.Add(new SortDescription(nameof(Bet.CreatedAt), ListSortDirection.Descending));
 
-            YearsList.Add("Все");
             YearsList.AddRange(_mainRepository.FootballEvents.Select(x => x.CreatedAt.Year.ToString()).Distinct());
 
             SelectedYear = (YearsList.Count > 1) ? DateTime.Now.Year.ToString() : YearsList[0];
@@ -261,7 +265,6 @@ namespace Beny.ViewModels
         private void UpdateTableWithDate(object x = null)
         {
             _collectionView.Filter = FilterByDateTime;
-
 
             OnPropertyChanged(nameof(Bets));
 
@@ -320,7 +323,6 @@ namespace Beny.ViewModels
             OnPropertyChanged(nameof(CountWin));
 
             _collectionView.Refresh();
-
         }
 
         #endregion

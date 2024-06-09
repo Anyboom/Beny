@@ -6,7 +6,33 @@
     <SolidColorBrush x:Key="ComboBoxDisabledBackgroundBrush" Color="#eee" />
     <SolidColorBrush x:Key="ComboBoxDisabledBorderBrush" Color="#888" />
 
-    <ControlTemplate x:Key="ComboBoxToggleButtonTemplate" TargetType="ToggleButton">
+    <Style x:Key="MainComboBoxItem" TargetType="{x:Type ComboBoxItem}">
+        <Setter Property="SnapsToDevicePixels" Value="true" />
+        <Setter Property="Background" Value="#F0F0F0" />
+        <Setter Property="OverridesDefaultStyle" Value="true" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Border
+                        Name="Border"
+                        Padding="2"
+                        SnapsToDevicePixels="true">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="true">
+                            <Setter TargetName="Border" Property="Background" Value="#e1e1e1" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="#888888" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="MainComboBoxToggleButtonTemplate" TargetType="ToggleButton">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -54,7 +80,7 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <Style x:Key="ComboBoxFlatStyle" TargetType="{x:Type ComboBox}">
+    <Style x:Key="MainComboBoxStyle" TargetType="{x:Type ComboBox}">
         <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
         <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
@@ -62,6 +88,7 @@
         <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
         <Setter Property="TextElement.Foreground" Value="Black" />
         <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource MainComboBoxItem}" />
         <Setter Property="Control.Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
@@ -72,7 +99,7 @@
                             ClickMode="Press"
                             Focusable="False"
                             IsChecked="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                            Template="{StaticResource ComboBoxToggleButtonTemplate}" />
+                            Template="{StaticResource MainComboBoxToggleButtonTemplate}" />
 
                         <ContentPresenter
                             Name="ContentSite"
@@ -113,7 +140,7 @@
                                 <Border
                                     Name="DropDownBorder"
                                     Margin="0,0,0,0"
-                                    Background="White"
+                                    Background="#F0F0F0"
                                     BorderBrush="{StaticResource ComboBoxNormalBorderBrush}"
                                     BorderThickness="1,1,1,1"
                                     CornerRadius="0" />
@@ -143,6 +170,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-    
 </ResourceDictionary>

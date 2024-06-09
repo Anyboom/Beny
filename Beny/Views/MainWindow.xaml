@@ -9,11 +9,14 @@
     xmlns:local="clr-namespace:Beny.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="https://github.com/fantasticfiasco/mvvm-dialogs"
-    xmlns:viewModels="clr-namespace:Beny.ViewModels" xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
     xmlns:system="clr-namespace:System;assembly=System.Runtime"
-    Title="MainWindow"
+    xmlns:viewModels="clr-namespace:Beny.ViewModels"
+    Title="Beny - трекер для твоих ставок"
     Width="800"
     Height="450"
+    MinHeight="450"
+    MinWidth="800"
     d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel}"
     md:DialogServiceViews.IsRegistered="True"
     Language="Ru"
@@ -32,10 +35,10 @@
                 <ResourceDictionary Source="../../Styles/DataGrid.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <converters:IsExpressToStringConverter x:Key="IsExpressToStringConverter" />
-            <converters:ListFootballEventsToString x:Key="ListFootballEventsToString" />
-            <converters:ListForecastsToString x:Key="ListForecastsToString" />
-            <converters:ListFootballEventsToColumnStrings x:Key="ListFootballEventsToColumnStrings" />
+            <converters:BooleanTypeFootballEventToStringConverter x:Key="IsExpressToStringConverter" />
+            <converters:ListFootballEventsToStringConverter x:Key="ListFootballEventsToString" />
+            <converters:ListForecastsToStringConverter x:Key="ListForecastsToString" />
+            <converters:ListFootballEventsToColumnConverter x:Key="ListFootballEventsToColumnStrings" />
         </ResourceDictionary>
     </Window.Resources>
     <Grid Margin="10">
@@ -63,7 +66,7 @@
                     MaxDropDownHeight="150"
                     ScrollViewer.VerticalScrollBarVisibility="Hidden"
                     SelectedItem="{Binding SelectedYear}"
-                    Style="{StaticResource ComboBoxFlatStyle}">
+                    Style="{StaticResource MainComboBoxStyle}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged">
                             <i:InvokeCommandAction Command="{Binding UpdateTableWithDateCommand}" />
@@ -85,14 +88,13 @@
                     MaxDropDownHeight="150"
                     ScrollViewer.VerticalScrollBarVisibility="Hidden"
                     SelectedItem="{Binding SelectedMonth}"
-                    Style="{StaticResource ComboBoxFlatStyle}">
+                    Style="{StaticResource MainComboBoxStyle}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged">
                             <i:InvokeCommandAction Command="{Binding UpdateTableWithDateCommand}" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ComboBox>
-
             </StackPanel>
             <StackPanel
                 Grid.Column="1"
@@ -125,25 +127,8 @@
             ScrollViewer.VerticalScrollBarVisibility="Hidden"
             SelectedValue="{Binding SelectedBet}"
             SelectionMode="Single"
-            SelectionUnit="FullRow">
-            <!--<DataGrid.ItemContainerStyle>
-                <Style TargetType="{x:Type DataGridRow}">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.NotCalculated}">
-                            <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Win}">
-                            <Setter Property="Background" Value="{StaticResource GreenBrush}" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Return}">
-                            <Setter Property="Background" Value="{StaticResource BlueBrush}" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Status}" Value="{x:Static enums:FootballEventStatus.Lose}">
-                            <Setter Property="Background" Value="{StaticResource RedBrush}" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </DataGrid.ItemContainerStyle>-->
+            SelectionUnit="FullRow"
+            Style="{StaticResource MainDataGrid}">
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}">
                     <Style.Triggers>
@@ -176,6 +161,7 @@
                         <MenuItem Command="{Binding ShowSportsEditorCommand}" Header="Спорт" />
                         <MenuItem Command="{Binding ShowCompetitionsEditorCommand}" Header="Соревнования" />
                         <MenuItem Command="{Binding ShowForecastsEditorCommand}" Header="Ставки" />
+                        <MenuItem Command="{Binding ShowTagsEditorCommand}" Header="Теги" />
                     </MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>
@@ -201,7 +187,7 @@
                     CanUserSort="False"
                     Header="Название события">
                     <DataGridTextColumn.CellStyle>
-                        <Style BasedOn="{StaticResource CustomDataGridCell}" TargetType="DataGridCell">
+                        <Style BasedOn="{StaticResource MainDataGridCell}" TargetType="DataGridCell">
                             <Setter Property="ToolTip" Value="{Binding FootballEvents, Converter={StaticResource ListFootballEventsToColumnStrings}, ConverterParameter=20}" />
                         </Style>
                     </DataGridTextColumn.CellStyle>
@@ -211,7 +197,7 @@
                     CanUserSort="False"
                     Header="Ставка">
                     <DataGridTextColumn.CellStyle>
-                        <Style BasedOn="{StaticResource CustomDataGridCell}" TargetType="DataGridCell">
+                        <Style BasedOn="{StaticResource MainDataGridCell}" TargetType="DataGridCell">
                             <Setter Property="ToolTip" Value="{Binding FootballEvents, Converter={StaticResource ListForecastsToString}, ConverterParameter=10}" />
                         </Style>
                     </DataGridTextColumn.CellStyle>

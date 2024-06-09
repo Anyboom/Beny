@@ -9,11 +9,11 @@ using System.Windows.Data;
 
 namespace Beny.Converters
 {
-    internal class ListForecastsToString : IValueConverter
+    internal class ListFootballEventsToColumnConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            IEnumerable<FootballEvent> events = (IEnumerable<FootballEvent>)value;
+            IEnumerable<FootballEvent> events = (IEnumerable<FootballEvent>) value;
 
             int maxCount = int.Parse(parameter.ToString());
 
@@ -23,7 +23,7 @@ namespace Beny.Converters
 
                 foreach (FootballEvent footEvent in events.Take(maxCount))
                 {
-                    stringBuilder.Append(footEvent.Forecast.Name + ", ");
+                    stringBuilder.AppendLine($"{footEvent?.HomeTeam} - {footEvent?.GuestTeam}");
                 }
 
                 if (events.Count() > maxCount)
@@ -40,7 +40,7 @@ namespace Beny.Converters
 
             var footballEvent = events.FirstOrDefault();
 
-            return $"{footballEvent?.Forecast.Name}";
+            return $"{footballEvent?.HomeTeam} - {footballEvent?.GuestTeam}";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

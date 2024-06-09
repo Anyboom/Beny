@@ -29,6 +29,8 @@ namespace Beny.ViewModels
 
         private string _searchText = string.Empty;
 
+        public string Title { get; set; }
+
         public string SearchText
         {
             get
@@ -86,6 +88,8 @@ namespace Beny.ViewModels
             RemoveItemCommand = new RelayCommand(RemoveItem, x => InputItem?.Length > 0);
             SaveItemsCommand = new RelayCommand(SaveItems);
             ClosedWindowCommand = new RelayCommand(ClosedWindow);
+
+            Title = $"Бени - редактирование модели: {typeof(T).Name}";
         }
 
         private bool FilterTeamByName(object x)

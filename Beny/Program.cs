@@ -2,6 +2,7 @@
 using Beny.Models;
 using Beny.Repositories;
 using Beny.ViewModels;
+using Beny.Views;
 using Beny.Views.Dialogs;
 using Beny.Views.Windows;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ namespace Beny
 
             container.Register<IDialogService>(() => new DialogService(), Lifestyle.Singleton);
 
-            container.Register<MainRepository>(Lifestyle.Singleton);
+            container.Register<MainRepository>(() => new MainRepository(), Lifestyle.Singleton);
 
             container.Register<MainViewModel>();
             container.Register<MainWindow>();
@@ -31,10 +32,14 @@ namespace Beny
             container.Register<EditorViewModel<Competition>>();
             container.Register<EditorViewModel<Team>>();
             container.Register<EditorViewModel<Forecast>>();
+            container.Register<EditorViewModel<Tag>>();
 
             container.Register<EditorWindow>();
 
             container.Register<ShowBetWindow>();
+
+            container.Register<SelectionViewModel>();
+            container.Register<SelectionWindow>();
 
             container.Verify();
 

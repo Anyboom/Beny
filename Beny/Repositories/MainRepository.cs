@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace Beny.Repositories
 {
@@ -17,6 +18,23 @@ namespace Beny.Repositories
         public DbSet<Competition> Competitions { get; set; } = null!;
         public DbSet<Sport> Sports { get; set; } = null!;
         public DbSet<Forecast> Forecasts { get; set; } = null!;
+        public DbSet<Tag> Tags { get; set; } = null!;
+        public DbSet<FootballEventTag> FootballEventTag { get; set; } = null!;
+
+        public MainRepository()
+        {
+            Database.EnsureCreatedAsync();
+
+            Bets.LoadAsync();
+            FootballEvents.LoadAsync();
+
+            Teams.LoadAsync();
+            Forecasts.LoadAsync();
+            Sports.LoadAsync();
+            Competitions.LoadAsync();
+            FootballEventTag.LoadAsync();
+            Tags.LoadAsync();
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -26,6 +44,22 @@ namespace Beny.Repositories
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Team>().HasIndex(p => p.Name).IsUnique();
+            modelBuilder.Entity<Competition>().HasIndex(p => p.Name).IsUnique();
+            modelBuilder.Entity<Sport>().HasIndex(p => p.Name).IsUnique();
+            modelBuilder.Entity<Forecast>().HasIndex(p => p.Name).IsUnique();
+
+            modelBuilder.Entity<FootballEventTag>()
+                .HasKey(bc => new { bc.FootballEventId, bc.TagId });
+
+            modelBuilder.Entity<FootballEventTag>()
+                .HasOne(bc => bc.FootballEvent)
+                .WithMany(b => b.FootballEventTags)
+                .HasForeignKey(bc => bc.FootballEventId);
+
+            modelBuilder.Entity<FootballEventTag>()
+                .HasOne(bc => bc.Tag)
+                .WithMany(c => c.FootballEventTags)
+                .HasForeignKey(bc => bc.TagId);
         }
     }
 }

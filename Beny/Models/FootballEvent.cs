@@ -2,9 +2,11 @@
 using Beny.Enums;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Beny.Collections;
 
 namespace Beny.Models
 {
@@ -127,6 +129,19 @@ namespace Beny.Models
                 _Sport = value;
                 OnPropertyChanged(nameof(Sport));
             }
+        }
+
+        public ItemObservableCollection<FootballEventTag> FootballEventTags { get; set; } = new ItemObservableCollection<FootballEventTag>();
+
+        public FootballEvent()
+        {
+            FootballEventTags.CollectionChanged += (_, _) => Update();
+            FootballEventTags.ItemPropertyChanged += (_, _) => Update();
+        }
+
+        private void Update()
+        {
+            OnPropertyChanged(nameof(FootballEventTags));
         }
     }
 }

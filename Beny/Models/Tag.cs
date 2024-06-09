@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Beny.Base;
+using Beny.Models.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Beny.Base;
-using Beny.Models.Interfaces;
 
 namespace Beny.Models
 {
-    public class Forecast : BindableBase, IDictionaryModel
+    public class Tag : BindableBase, IDictionaryModel
     {
         private int _id;
         public int Id
@@ -21,6 +21,7 @@ namespace Beny.Models
             set
             {
                 _id = value;
+
                 OnPropertyChanged(nameof(Id));
             }
         }
@@ -35,6 +36,7 @@ namespace Beny.Models
             set
             {
                 _name = value;
+
                 OnPropertyChanged(nameof(Name));
             }
         }
@@ -49,10 +51,12 @@ namespace Beny.Models
             set
             {
                 _deletedAt = value;
+
                 OnPropertyChanged(nameof(DeletedAt));
             }
         }
 
+        public ObservableCollection<FootballEventTag> FootballEventTags { get; set; } = new ObservableCollection<FootballEventTag>();
         public override string ToString()
         {
             return Name;

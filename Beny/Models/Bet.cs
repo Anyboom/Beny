@@ -1,13 +1,7 @@
 ﻿using Beny.Base;
 using Beny.Collections;
 using Beny.Enums;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace Beny.Models
 {
@@ -29,7 +23,6 @@ namespace Beny.Models
         }
 
         public ItemObservableCollection<FootballEvent> FootballEvents { get; set; } = new ItemObservableCollection<FootballEvent>();
-
         public DateTime CreatedAt { get; set; }
         public float? Coefficient
         {
@@ -79,8 +72,8 @@ namespace Beny.Models
 
         public Bet()
         {
-            FootballEvents.CollectionChanged += (s, e) => Update();
-            FootballEvents.ItemPropertyChanged += (s, e) => Update();
+            FootballEvents.CollectionChanged += (_, _) => Update();
+            FootballEvents.ItemPropertyChanged += (_, _) => Update();
         }
 
         private void Update()
