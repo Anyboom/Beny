@@ -1,7 +1,6 @@
 ﻿using Beny.Base;
 using Beny.Collections;
 using Beny.Enums;
-using System.Collections.ObjectModel;
 
 namespace Beny.Models
 {
@@ -48,14 +47,14 @@ namespace Beny.Models
                     return FootballEventStatus.Lose;
                 }
 
-                if (FootballEvents.All(x => x.FootballEventStatus != FootballEventStatus.Lose && x.FootballEventStatus != FootballEventStatus.NotCalculated))
-                {
-                    return FootballEventStatus.Win;
-                }
-
                 if (FootballEvents.All(x => x.FootballEventStatus == FootballEventStatus.Return))
                 {
                     return FootballEventStatus.Return;
+                }
+
+                if (FootballEvents.All(x => x.FootballEventStatus != FootballEventStatus.Lose && x.FootballEventStatus != FootballEventStatus.NotCalculated))
+                {
+                    return FootballEventStatus.Win;
                 }
 
                 return FootballEventStatus.NotCalculated;

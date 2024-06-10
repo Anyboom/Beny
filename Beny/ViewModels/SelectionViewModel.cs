@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Beny.Base;
 using Beny.Commands;
-using Beny.Models;
 using Beny.Repositories;
 using MvvmDialogs;
 
 namespace Beny.ViewModels
 {
-    class SelectionViewModel : BindableBase, IModalDialogViewModel
+    public class SelectionViewModel<T> : BindableBase, IModalDialogViewModel where T: class, new ()
     {
         public bool? DialogResult { get; set; } = false;
-        public ObservableCollection<Tag> LeftItems { get; set; }
-        public ObservableCollection<Tag> RigthItems { get; set; }
-        public Tag SelectedLeftItem { get; set; }
-        public Tag SelectedRigthItem { get; set; }
+        public ObservableCollection<T> LeftItems { get; set; }
+        public ObservableCollection<T> RigthItems { get; set; }
+        public T SelectedLeftItem { get; set; }
+        public T SelectedRigthItem { get; set; }
 
         private readonly MainRepository _mainRepository;
         private readonly IDialogService _dialogService;
@@ -62,7 +55,7 @@ namespace Beny.ViewModels
 
         private void LoadedWindow(object obj)
         {
-            LeftItems = new ObservableCollection<Tag>(_mainRepository.Tags.Local.Except(RigthItems));
+            LeftItems = new ObservableCollection<T>(_mainRepository.Set<T>().Local.Except(RigthItems));
 
             OnPropertyChanged(nameof(RigthItems));
             OnPropertyChanged(nameof(LeftItems));

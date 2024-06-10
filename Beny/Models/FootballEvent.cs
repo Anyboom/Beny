@@ -1,11 +1,5 @@
 ﻿using Beny.Base;
 using Beny.Enums;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Beny.Collections;
 
 namespace Beny.Models
@@ -128,6 +122,21 @@ namespace Beny.Models
             {
                 _Sport = value;
                 OnPropertyChanged(nameof(Sport));
+            }
+        }
+
+        private bool _isAlive = false;
+
+        public bool IsLive
+        {
+            get
+            {
+                return _isAlive;
+            }
+            set
+            {
+                _isAlive = value;
+                OnPropertyChanged(nameof(IsLive));
             }
         }
 

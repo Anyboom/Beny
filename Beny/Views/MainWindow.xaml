@@ -15,8 +15,8 @@
     Title="Beny - трекер для твоих ставок"
     Width="800"
     Height="450"
-    MinHeight="450"
     MinWidth="800"
+    MinHeight="450"
     d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel}"
     md:DialogServiceViews.IsRegistered="True"
     Language="Ru"
@@ -104,16 +104,16 @@
                     Margin="0,0,10,0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Text="{Binding CountWin, StringFormat=В: {0}}" />
+                    Text="{Binding CountWin, StringFormat=Выигрыш: {0}}" />
                 <TextBlock
                     Margin="0,0,10,0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Text="{Binding CountLose, StringFormat=П: {0}}" />
+                    Text="{Binding CountLose, StringFormat=Поражение: {0}}" />
                 <TextBlock
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Text="{Binding CountReturn, StringFormat=В: {0}}" />
+                    Text="{Binding CountReturn, StringFormat=Возврат: {0}}" />
             </StackPanel>
         </Grid>
         <DataGrid
@@ -156,7 +156,7 @@
                     <Separator />
                     <MenuItem Command="{Binding DeleteBetCommand}" Header="Удалить" />
                     <Separator />
-                    <MenuItem Header="Редакторы">
+                    <MenuItem Header="Редакторы:">
                         <MenuItem Command="{Binding ShowTeamsEditorCommand}" Header="Команды" />
                         <MenuItem Command="{Binding ShowSportsEditorCommand}" Header="Спорт" />
                         <MenuItem Command="{Binding ShowCompetitionsEditorCommand}" Header="Соревнования" />

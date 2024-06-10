@@ -4,25 +4,13 @@ using Beny.Models;
 using Beny.Enums;
 using Beny.Repositories;
 using Beny.Views.Dialogs;
-using Microsoft.EntityFrameworkCore;
-using SimpleInjector;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using Beny.Collections;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MvvmDialogs;
 using MvvmDialogs.FrameworkDialogs.MessageBox;
-using Container = SimpleInjector.Container;
-using System.Windows.Documents;
 
 namespace Beny.ViewModels
 {
@@ -30,9 +18,18 @@ namespace Beny.ViewModels
     {
         #region [Private variables]
 
-        private readonly Container _container;
         private readonly MainRepository _mainRepository;
         private readonly IDialogService _dialogService;
+        private readonly EditBetViewModel _editBetViewModel;
+
+        private readonly EditorViewModel<Tag> _tagEditorViewModel;
+        private readonly EditorViewModel<Team> _teamEditorViewModel;
+        private readonly EditorViewModel<Forecast> _forecastEditorViewModel;
+        private readonly EditorViewModel<Sport> _sportEditorViewModel;
+        private readonly EditorViewModel<Competition> _competitionEditorViewModel;
+
+        private readonly ShowBetViewModel _showBetViewModel;
+
         private CollectionView _collectionView;
 
         private string _selectedYear;
@@ -44,7 +41,7 @@ namespace Beny.ViewModels
 
         public ObservableCollection<Bet> Bets { get; set; }
         public Bet SelectedBet { get; set; }
-        public List<string> YearsList { get; set; } = ["Все"];
+        public List<string> YearsList { get; set; } = new() { "Все" };
 
         public int? CountWin
         {
@@ -133,12 +130,19 @@ namespace Beny.ViewModels
 
         #region [MainViewModel]
 
-        public MainViewModel(Container container)
+        public MainViewModel(MainRepository mainRepository, IDialogService dialogService, EditBetViewModel editBetViewModel, EditorViewModel<Tag> tagEditorViewModel, EditorViewModel<Forecast> forecastEditorViewModel, EditorViewModel<Sport> sportEditorViewModel, EditorViewModel<Team> teamEditorViewModel, EditorViewModel<Competition> competitionEditorViewModel, ShowBetViewModel showBetViewModel) 
         {
-            _container = container;
+            _mainRepository = mainRepository;
+            _dialogService = dialogService;
+            _editBetViewModel = editBetViewModel;
 
-            _mainRepository = _container.GetInstance<MainRepository>();
-            _dialogService = _container.GetInstance<IDialogService>();
+            _sportEditorViewModel = sportEditorViewModel;
+            _forecastEditorViewModel = forecastEditorViewModel;
+            _competitionEditorViewModel = competitionEditorViewModel;
+            _tagEditorViewModel = tagEditorViewModel;
+            _teamEditorViewModel = teamEditorViewModel;
+
+            _showBetViewModel = showBetViewModel;
 
             EditBetCommand = new RelayCommand(EditBet, _ => SelectedBet != null);
             AddBetCommand = new RelayCommand(AddBet);
@@ -155,7 +159,7 @@ namespace Beny.ViewModels
 
         private void ShowTagsEditor(object obj)
         {
-            EditorViewModel<Tag> viewModel = _container.GetInstance<EditorViewModel<Tag>>();
+            EditorViewModel<Tag> viewModel = _tagEditorViewModel;
 
             bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
 
@@ -167,7 +171,7 @@ namespace Beny.ViewModels
 
         private void ShowCompetitionsEditor(object obj)
         {
-            EditorViewModel<Competition> viewModel = _container.GetInstance<EditorViewModel<Competition>>();
+            EditorViewModel<Competition> viewModel = _competitionEditorViewModel;
 
             bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
 
@@ -179,7 +183,7 @@ namespace Beny.ViewModels
 
         private void ShowForecastsEditor(object obj)
         {
-            EditorViewModel<Forecast> viewModel = _container.GetInstance<EditorViewModel<Forecast>>();
+            EditorViewModel<Forecast> viewModel = _forecastEditorViewModel;
 
             bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
 
@@ -191,7 +195,7 @@ namespace Beny.ViewModels
 
         private void ShowSportsEditor(object obj)
         {
-            EditorViewModel<Sport> viewModel = _container.GetInstance<EditorViewModel<Sport>>();
+            EditorViewModel<Sport> viewModel = _sportEditorViewModel;
 
             bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
 
@@ -203,7 +207,7 @@ namespace Beny.ViewModels
 
         private void ShowTeamsEditor(object obj)
         {
-            EditorViewModel<Team> viewModel = _container.GetInstance<EditorViewModel<Team>>();
+            EditorViewModel<Team> viewModel = _teamEditorViewModel;
 
             bool? result = _dialogService.ShowDialog<EditorWindow>(this, viewModel);
 
@@ -215,10 +219,9 @@ namespace Beny.ViewModels
 
         private void ShowBet(object obj)
         {
-            ShowBetViewModel viewModel = new ShowBetViewModel()
-            {
-                CurrentBet = SelectedBet
-            };
+            ShowBetViewModel viewModel = _showBetViewModel;
+
+            viewModel.CurrentBet = SelectedBet;
 
             _dialogService.Show<ShowBetWindow>(this, viewModel);
         }
@@ -245,7 +248,7 @@ namespace Beny.ViewModels
             }
         }
 
-        private async void LoadedWindow(object x)
+        private void LoadedWindow(object x)
         {
             Bets = _mainRepository.Bets.Local.ToObservableCollection();
 
@@ -253,7 +256,7 @@ namespace Beny.ViewModels
 
             _collectionView.SortDescriptions.Add(new SortDescription(nameof(Bet.CreatedAt), ListSortDirection.Descending));
 
-            YearsList.AddRange(_mainRepository.FootballEvents.Select(x => x.CreatedAt.Year.ToString()).Distinct());
+            YearsList.AddRange(_mainRepository.FootballEvents.Local.Select(x => x.CreatedAt.Year.ToString()).Distinct());
 
             SelectedYear = (YearsList.Count > 1) ? DateTime.Now.Year.ToString() : YearsList[0];
 
@@ -290,7 +293,7 @@ namespace Beny.ViewModels
 
         private void EditBet(object x)
         {
-            var viewModel = _container.GetInstance<EditBetViewModel>();
+            EditBetViewModel viewModel = _editBetViewModel;
 
             viewModel.UpdateBetId = SelectedBet.Id;
 
@@ -304,7 +307,7 @@ namespace Beny.ViewModels
 
         private void AddBet(object x)
         {
-            var viewModel = _container.GetInstance<EditBetViewModel>();
+            EditBetViewModel viewModel = _editBetViewModel;
             
             bool? result = _dialogService.ShowDialog<CreateOrUpdateBetWindow>(this, viewModel);
 

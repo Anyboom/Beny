@@ -5,20 +5,12 @@ using Beny.Models;
 using Beny.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 using Beny.Collections;
 using Beny.Views;
 using MvvmDialogs;
-using Container = SimpleInjector.Container;
 
 namespace Beny.ViewModels
 {
@@ -26,10 +18,10 @@ namespace Beny.ViewModels
     {
         #region [Private variables]
 
-        private readonly Container _container;
         private readonly ErrorsViewModel _errorsViewModel;
         private readonly MainRepository _mainRepository;
         private readonly IDialogService _dialogService;
+        private readonly SelectionViewModel<Tag> _selectionViewModel;
 
         private string _homeTeam;
         private string _guestTeam;
@@ -39,6 +31,7 @@ namespace Beny.ViewModels
         private string _coefficient;
         private int _minute;
         private int _hour;
+        private bool _isLive = false;
 
         private FootballEvent _selectedFootballEvent;
 
@@ -56,7 +49,7 @@ namespace Beny.ViewModels
 
         public int UpdateBetId { get; set; } = -1;
         public Bet CurrentBet { get; set; }
-        public ObservableCollection<Tag> Tags { get; set; } = new ObservableCollection<Tag>();
+        public ObservableCollection<Tag> Tags { get; set; }
 
         public string Title
         {
@@ -86,8 +79,7 @@ namespace Beny.ViewModels
                 this.Competition = value?.Competition?.Name;
                 this.Forecast = value?.Forecast?.Name;
                 this.Tags = new ObservableCollection<Tag>(value?.FootballEventTags.Select(x => x.Tag));
-
-                IsValidatedForm = true;
+                this.IsLive = (bool) value?.IsLive;
 
                 OnPropertyChanged(nameof(SelectedFootballEvent));
             }
@@ -111,6 +103,20 @@ namespace Beny.ViewModels
                 }
 
                 OnPropertyChanged(nameof(HomeTeam));
+            }
+        }
+
+        public bool IsLive
+        {
+            get
+            {
+                return _isLive;
+            }
+            set
+            {
+                _isLive = value;
+
+                OnPropertyChanged(nameof(IsLive));
             }
         }
 
@@ -282,12 +288,11 @@ namespace Beny.ViewModels
 
         #region CreateOrUpdateBetViewModel
 
-        public EditBetViewModel(Container container)
+        public EditBetViewModel(MainRepository mainRepository, IDialogService dialogService, SelectionViewModel<Tag> selectionViewModel)
         {
-            _container = container;
-
-            _mainRepository = _container.GetInstance<MainRepository>();
-            _dialogService = _container.GetInstance<IDialogService>();
+            _mainRepository = mainRepository;
+            _dialogService = dialogService;
+            _selectionViewModel = selectionViewModel;
 
             _errorsViewModel = new ErrorsViewModel();
 
@@ -295,8 +300,6 @@ namespace Beny.ViewModels
             {
                 ErrorsChanged?.Invoke(s, e);
             };
-
-            _mainRepository.Database.EnsureCreated();
 
             ForecastList = new ObservableCollection<string>(_mainRepository.Forecasts.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
             SportList = new ObservableCollection<string>(_mainRepository.Sports.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
@@ -310,10 +313,14 @@ namespace Beny.ViewModels
             EditFootballEventCommand = new RelayCommand(SaveFootballEvent, x => CanCreate && SelectedFootballEvent != null);
             ClearFootballEventCommand = new RelayCommand(ClearFootballEvent);
             DeleteFootballEventCommand = new RelayCommand(DeleteFootballEvent, x => SelectedFootballEvent != null);
+
             LoadedWindowCommand = new RelayCommand(LoadedWindow);
             ClosedWindowCommand = new RelayCommand(ClosedWindow);
+
             SaveBetCommand = new RelayCommand(SaveBet, x => CurrentBet?.FootballEvents.Count > 0);
+
             UpdateFootballEventStatusCommand = new RelayCommand(UpdateFootballEventStatus, x => SelectedFootballEvent != null);
+
             OpenTagsWindowCommand = new RelayCommand(OpenTagsWindow);
 
             HomeTeam = "Ливерпуль";
@@ -322,13 +329,14 @@ namespace Beny.ViewModels
             Competition = "Англия. Премьер-лига";
             Coefficient = "1,78";
             Sport = "Футбол";
+            Tags = new ObservableCollection<Tag>();
 
             Date = DateTime.Now;
         }
 
         private void OpenTagsWindow(object obj)
         {
-            SelectionViewModel viewModel = _container.GetInstance<SelectionViewModel>();
+            SelectionViewModel<Tag> viewModel = _selectionViewModel;
 
             viewModel.RigthItems = new ObservableCollection<Tag>(Tags);
 
@@ -459,6 +467,7 @@ namespace Beny.ViewModels
             footballEvent.Forecast = forecast;
             footballEvent.HomeTeam = homeTeam;
             footballEvent.GuestTeam = guestTeam;
+            footballEvent.IsLive = IsLive;
 
             footballEvent.FootballEventTags.Clear();
 
@@ -520,13 +529,6 @@ namespace Beny.ViewModels
 
         private void LoadedWindow(object x)
         {
-            // переделать на load find
-            //CurrentBet = _mainRepository.Bets.Include(x => x.FootballEvents).ThenInclude(e => e.Tags).First(x => x.Id == UpdateBetId) ?? new Bet() { CreatedAt = DateTime.Now, FootballEvents = new ItemObservableCollection<FootballEvent>() };
-
-            //CurrentBet = _mainRepository.Bets.Include(x => x.FootballEvents).ThenInclude(x => x.Tags).First();
-
-            //CurrentBet = _mainRepository.Bets.Local.First(x => x.Id == UpdateBetId);
-
             CurrentBet = _mainRepository.Bets.Local.FirstOrDefault(x => x.Id == UpdateBetId, new Bet() { CreatedAt = DateTime.Now, FootballEvents = new ItemObservableCollection<FootballEvent>()});
 
             OnPropertyChanged(nameof(CurrentBet));
@@ -559,19 +561,7 @@ namespace Beny.ViewModels
 
         #region [IModalDialogViewModel]
 
-        private bool? _dialogResult = false;
-
-        public bool? DialogResult
-        {
-            get
-            {
-                return _dialogResult;
-            }
-            set
-            {
-                _dialogResult = value;
-            }
-        }
+        public bool? DialogResult { get; set; } = false;
 
         #endregion
 
@@ -583,8 +573,6 @@ namespace Beny.ViewModels
 
         public bool CanCreate => HasErrors == false;
 
-
-        public bool IsValidatedForm = false;
         public IEnumerable GetErrors(string? propertyName)
         {
             return _errorsViewModel.GetErrors(propertyName);

@@ -1,12 +1,5 @@
 ﻿using Beny.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace Beny.Repositories
 {
@@ -47,6 +40,8 @@ namespace Beny.Repositories
             modelBuilder.Entity<Competition>().HasIndex(p => p.Name).IsUnique();
             modelBuilder.Entity<Sport>().HasIndex(p => p.Name).IsUnique();
             modelBuilder.Entity<Forecast>().HasIndex(p => p.Name).IsUnique();
+
+            modelBuilder.Entity<FootballEvent>().Property(x => x.IsLive).HasDefaultValue(false);
 
             modelBuilder.Entity<FootballEventTag>()
                 .HasKey(bc => new { bc.FootballEventId, bc.TagId });
