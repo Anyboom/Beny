@@ -308,7 +308,9 @@ namespace Beny.ViewModels
         private void AddBet(object x)
         {
             EditBetViewModel viewModel = _editBetViewModel;
-            
+
+            viewModel.UpdateBetId = -1;
+
             bool? result = _dialogService.ShowDialog<CreateOrUpdateBetWindow>(this, viewModel);
 
             if (result == true)

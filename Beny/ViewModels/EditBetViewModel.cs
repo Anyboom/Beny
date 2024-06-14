@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
 using Beny.Collections;
 using Beny.Views;
@@ -78,7 +79,9 @@ namespace Beny.ViewModels
                 this.GuestTeam = value?.GuestTeam?.Name;
                 this.Competition = value?.Competition?.Name;
                 this.Forecast = value?.Forecast?.Name;
+
                 this.Tags = new ObservableCollection<Tag>(value?.FootballEventTags.Select(x => x.Tag));
+
                 this.IsLive = (bool) value?.IsLive;
 
                 OnPropertyChanged(nameof(SelectedFootballEvent));
@@ -323,15 +326,7 @@ namespace Beny.ViewModels
 
             OpenTagsWindowCommand = new RelayCommand(OpenTagsWindow);
 
-            HomeTeam = "Ливерпуль";
-            GuestTeam = "Манчестер Сити";
-            Forecast = "ТБ 2.5";
-            Competition = "Англия. Премьер-лига";
-            Coefficient = "1,78";
-            Sport = "Футбол";
-            Tags = new ObservableCollection<Tag>();
-
-            Date = DateTime.Now;
+            
         }
 
         private void OpenTagsWindow(object obj)
@@ -531,6 +526,18 @@ namespace Beny.ViewModels
         {
             CurrentBet = _mainRepository.Bets.Local.FirstOrDefault(x => x.Id == UpdateBetId, new Bet() { CreatedAt = DateTime.Now, FootballEvents = new ItemObservableCollection<FootballEvent>()});
 
+            HomeTeam = "Ливерпуль";
+            GuestTeam = "Манчестер Сити";
+            Forecast = "ТБ 2.5";
+            Competition = "Англия. Премьер-лига";
+            Coefficient = "1,78";
+            Sport = "Футбол";
+            Tags = new ObservableCollection<Tag>();
+            Date = DateTime.Now;
+
+            _selectedFootballEvent = default;
+
+            OnPropertyChanged(nameof(SelectedFootballEvent));
             OnPropertyChanged(nameof(CurrentBet));
         }
 
