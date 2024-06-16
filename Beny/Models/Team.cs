@@ -3,7 +3,7 @@ using Beny.Models.Interfaces;
 
 namespace Beny.Models
 {
-    public class Team : BindableBase, IDictionaryModel
+    public class Team : NotifyPropertyChanged, IDictionaryModel
     {
         private int _id;
         public int Id

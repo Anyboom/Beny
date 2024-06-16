@@ -1,8 +1,6 @@
 ﻿using Beny.Base;
 using Beny.Commands;
 using Beny.Models;
-using Beny.Enums;
-using Beny.Repositories;
 using Beny.Views.Dialogs;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,14 +9,16 @@ using System.Windows.Data;
 using System.Windows.Input;
 using MvvmDialogs;
 using MvvmDialogs.FrameworkDialogs.MessageBox;
+using Beny.Models.Contexts;
+using Beny.Models.Enums;
 
 namespace Beny.ViewModels
 {
-    public class MainViewModel : BindableBase
+    public class MainViewModel : NotifyPropertyChanged
     {
         #region [Private variables]
 
-        private readonly MainRepository _mainRepository;
+        private readonly MainContext _mainContext;
         private readonly IDialogService _dialogService;
         private readonly EditBetViewModel _editBetViewModel;
 
@@ -130,9 +130,9 @@ namespace Beny.ViewModels
 
         #region [MainViewModel]
 
-        public MainViewModel(MainRepository mainRepository, IDialogService dialogService, EditBetViewModel editBetViewModel, EditorViewModel<Tag> tagEditorViewModel, EditorViewModel<Forecast> forecastEditorViewModel, EditorViewModel<Sport> sportEditorViewModel, EditorViewModel<Team> teamEditorViewModel, EditorViewModel<Competition> competitionEditorViewModel, ShowBetViewModel showBetViewModel) 
+        public MainViewModel(MainContext mainContext, IDialogService dialogService, EditBetViewModel editBetViewModel, EditorViewModel<Tag> tagEditorViewModel, EditorViewModel<Forecast> forecastEditorViewModel, EditorViewModel<Sport> sportEditorViewModel, EditorViewModel<Team> teamEditorViewModel, EditorViewModel<Competition> competitionEditorViewModel, ShowBetViewModel showBetViewModel) 
         {
-            _mainRepository = mainRepository;
+            _mainContext = mainContext;
             _dialogService = dialogService;
             _editBetViewModel = editBetViewModel;
 
@@ -241,8 +241,8 @@ namespace Beny.ViewModels
 
             if (result == MessageBoxResult.Yes)
             {
-                _mainRepository.Bets.Remove(SelectedBet);
-                _mainRepository.SaveChanges();
+                _mainContext.Bets.Remove(SelectedBet);
+                _mainContext.SaveChanges();
 
                 UpdateProperties();
             }
@@ -250,13 +250,13 @@ namespace Beny.ViewModels
 
         private void LoadedWindow(object x)
         {
-            Bets = _mainRepository.Bets.Local.ToObservableCollection();
+            Bets = _mainContext.Bets.Local.ToObservableCollection();
 
             _collectionView = (CollectionView) CollectionViewSource.GetDefaultView(Bets);
 
             _collectionView.SortDescriptions.Add(new SortDescription(nameof(Bet.CreatedAt), ListSortDirection.Descending));
 
-            YearsList.AddRange(_mainRepository.FootballEvents.Local.Select(x => x.CreatedAt.Year.ToString()).Distinct());
+            YearsList.AddRange(_mainContext.FootballEvents.Local.Select(x => x.CreatedAt.Year.ToString()).Distinct());
 
             SelectedYear = (YearsList.Count > 1) ? DateTime.Now.Year.ToString() : YearsList[0];
 
@@ -309,7 +309,7 @@ namespace Beny.ViewModels
         {
             EditBetViewModel viewModel = _editBetViewModel;
 
-            viewModel.UpdateBetId = -1;
+            viewModel.UpdateBetId = 0;
 
             bool? result = _dialogService.ShowDialog<CreateOrUpdateBetWindow>(this, viewModel);
 

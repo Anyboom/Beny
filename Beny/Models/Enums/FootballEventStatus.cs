@@ -1,4 +1,4 @@
-﻿namespace Beny.Enums
+﻿namespace Beny.Models.Enums
 {
     public enum FootballEventStatus
     {

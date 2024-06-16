@@ -1,9 +1,9 @@
 ﻿using Beny.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Beny.Repositories
+namespace Beny.Models.Contexts
 {
-    public class MainRepository : DbContext
+    public class MainContext : DbContext
     {
         public DbSet<Bet> Bets { get; set; } = null!;
         public DbSet<FootballEvent> FootballEvents { get; set; } = null!;
@@ -14,7 +14,7 @@ namespace Beny.Repositories
         public DbSet<Tag> Tags { get; set; } = null!;
         public DbSet<FootballEventTag> FootballEventTag { get; set; } = null!;
 
-        public MainRepository()
+        public MainContext()
         {
             Database.EnsureCreatedAsync();
 

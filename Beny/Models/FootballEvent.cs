@@ -1,13 +1,37 @@
 ﻿using Beny.Base;
-using Beny.Enums;
 using Beny.Collections;
+using Beny.Models.Enums;
 
 namespace Beny.Models
 {
-    public class FootballEvent : BindableBase
+    public class FootballEvent : NotifyPropertyChanged
     {
-        public int Id { get; set; }
-        public Bet Bet { get; set; }
+        private int _id;
+        public int Id
+        {
+            get
+            {
+                return _id;
+            }
+            set
+            {
+                _id = value;
+                OnPropertyChanged(nameof(Id));
+            }
+        }
+        private Bet _bet;
+        public Bet Bet
+        {
+            get
+            {
+                return _bet;
+            }
+            set
+            {
+                _bet = value;
+                OnPropertyChanged(nameof(Bet));
+            }
+        }
         private Team _HomeTeam { get; set; }
         public Team HomeTeam {
             get

@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
 
-namespace Beny.Converters
+namespace Beny.Helpers.Converters
 {
     public class IsNullConverter : IValueConverter
     {

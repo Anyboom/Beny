@@ -3,13 +3,13 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Data;
 
-namespace Beny.Converters
+namespace Beny.Helpers.Converters
 {
-    internal class ListFootballEventsToColumnConverter : IValueConverter
+    internal class ListForecastsToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            IEnumerable<FootballEvent> events = (IEnumerable<FootballEvent>) value;
+            IEnumerable<FootballEvent> events = (IEnumerable<FootballEvent>)value;
 
             int maxCount = int.Parse(parameter.ToString());
 
@@ -19,7 +19,7 @@ namespace Beny.Converters
 
                 foreach (FootballEvent footEvent in events.Take(maxCount))
                 {
-                    stringBuilder.AppendLine($"{footEvent?.HomeTeam} - {footEvent?.GuestTeam}");
+                    stringBuilder.Append(footEvent.Forecast.Name + ", ");
                 }
 
                 if (events.Count() > maxCount)
@@ -36,7 +36,7 @@ namespace Beny.Converters
 
             var footballEvent = events.FirstOrDefault();
 
-            return $"{footballEvent?.HomeTeam} - {footballEvent?.GuestTeam}";
+            return $"{footballEvent?.Forecast.Name}";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

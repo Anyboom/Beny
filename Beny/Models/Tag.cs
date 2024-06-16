@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 
 namespace Beny.Models
 {
-    public class Tag : BindableBase, IDictionaryModel
+    public class Tag : NotifyPropertyChanged, IDictionaryModel
     {
         private int _id;
         public int Id

@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Interop;
 
-namespace Beny.Utilities
+namespace Beny.Helpers
 {
     public static class IconHelper
     {

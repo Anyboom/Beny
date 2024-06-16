@@ -2,7 +2,7 @@
 
 namespace Beny.Models
 {
-    public class FootballEventTag : BindableBase
+    public class FootballEventTag : NotifyPropertyChanged
     {
         private int _footballEventId;
         private FootballEvent _footballEvent;

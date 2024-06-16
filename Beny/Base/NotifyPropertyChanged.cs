@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Beny.Base
 {
-    public class BindableBase : INotifyPropertyChanged
+    public class NotifyPropertyChanged : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

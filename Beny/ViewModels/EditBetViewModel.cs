@@ -1,8 +1,6 @@
 ﻿using Beny.Base;
 using Beny.Commands;
-using Beny.Enums;
 using Beny.Models;
-using Beny.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -12,15 +10,18 @@ using System.Windows.Input;
 using Beny.Collections;
 using Beny.Views;
 using MvvmDialogs;
+using System.Collections.Generic;
+using Beny.Models.Contexts;
+using Beny.Models.Enums;
 
 namespace Beny.ViewModels
 {
-    public class EditBetViewModel : BindableBase, INotifyDataErrorInfo, IModalDialogViewModel
+    public class EditBetViewModel : NotifyPropertyChanged, INotifyDataErrorInfo, IModalDialogViewModel
     {
-        #region [Private variables]
+        #region Private variables
 
         private readonly ErrorsViewModel _errorsViewModel;
-        private readonly MainRepository _mainRepository;
+        private readonly MainContext _mainContext;
         private readonly IDialogService _dialogService;
         private readonly SelectionViewModel<Tag> _selectionViewModel;
 
@@ -38,27 +39,21 @@ namespace Beny.ViewModels
 
         #endregion
 
-        #region [Getters/Setters]
+        #region Getters/Setters
 
-        public ObservableCollection<string> TeamList { get; set; }
-        public ObservableCollection<string> ForecastList { get; set; }
-        public ObservableCollection<string> SportList { get; set; }
-        public ObservableCollection<string> CompetitionList { get; set; }
+        public HashSet<string> TeamList { get; set; }
+        public HashSet<string> ForecastList { get; set; }
+        public HashSet<string> SportList { get; set; }
+        public HashSet<string> CompetitionList { get; set; }
 
         public int[] AllMinutes { get; set; }
         public int[] AllHours { get; set; }
 
-        public int UpdateBetId { get; set; } = -1;
+        public int UpdateBetId { get; set; } = 0;
         public Bet CurrentBet { get; set; }
         public ObservableCollection<Tag> Tags { get; set; }
 
-        public string Title
-        {
-            get
-            {
-                return (UpdateBetId == -1) ? "Бени - создание ставки" : "Бени - редактирование ставки";
-            }
-        }
+        public string Title => (UpdateBetId > 0) ? "Бени - редактирование ставки" : "Бени - создание ставки";
 
         public FootballEvent SelectedFootballEvent
         {
@@ -70,19 +65,22 @@ namespace Beny.ViewModels
             {
                 _selectedFootballEvent = value;
 
-                this.Sport = value?.Sport?.Name;
-                this.Coefficient = value?.Coefficient.ToString();
-                this.Date = value?.StartedAt.Date ?? DateTime.Now;
-                this.Hour = value?.StartedAt.Hour ?? 0;
-                this.Minute = value?.StartedAt.Minute ?? 0;
-                this.HomeTeam = value?.HomeTeam?.Name;
-                this.GuestTeam = value?.GuestTeam?.Name;
-                this.Competition = value?.Competition?.Name;
-                this.Forecast = value?.Forecast?.Name;
+                if (value != null)
+                {
+                    Sport = value.Sport.Name;
+                    Coefficient = value.Coefficient.ToString();
+                    Date = value.StartedAt.Date;
+                    Hour = value.StartedAt.Hour;
+                    Minute = value.StartedAt.Minute;
+                    HomeTeam = value.HomeTeam.Name;
+                    GuestTeam = value.GuestTeam.Name;
+                    Competition = value.Competition.Name;
+                    Forecast = value.Forecast.Name;
 
-                this.Tags = new ObservableCollection<Tag>(value?.FootballEventTags.Select(x => x.Tag));
+                    Tags = new ObservableCollection<Tag>(value.FootballEventTags.Select(x => x.Tag));
 
-                this.IsLive = (bool) value?.IsLive;
+                    IsLive = value.IsLive;
+                }
 
                 OnPropertyChanged(nameof(SelectedFootballEvent));
             }
@@ -220,7 +218,7 @@ namespace Beny.ViewModels
             }
             set
             {
-                _sport = value?.Trim();
+                _sport = value.Trim();
 
                 _errorsViewModel.ClearErrors(nameof(Sport));
 
@@ -243,6 +241,7 @@ namespace Beny.ViewModels
             set
             {
                 _date = value;
+
                 OnPropertyChanged(nameof(Date));
             }
         }
@@ -255,6 +254,7 @@ namespace Beny.ViewModels
             set
             {
                 _hour = value;
+
                 OnPropertyChanged(nameof(Hour));
             }
         }
@@ -269,13 +269,14 @@ namespace Beny.ViewModels
             set
             {
                 _minute = value;
+
                 OnPropertyChanged(nameof(Minute));
             }
         }
 
         #endregion
 
-        #region [Commands]
+        #region Commands
 
         public ICommand CreateFootballEventCommand { get; set; }
         public ICommand EditFootballEventCommand { get; set; }
@@ -289,11 +290,11 @@ namespace Beny.ViewModels
 
         #endregion
 
-        #region CreateOrUpdateBetViewModel
+        #region Constructor EditBetViewModel
 
-        public EditBetViewModel(MainRepository mainRepository, IDialogService dialogService, SelectionViewModel<Tag> selectionViewModel)
+        public EditBetViewModel(MainContext mainContext, IDialogService dialogService, SelectionViewModel<Tag> selectionViewModel)
         {
-            _mainRepository = mainRepository;
+            _mainContext = mainContext;
             _dialogService = dialogService;
             _selectionViewModel = selectionViewModel;
 
@@ -304,16 +305,16 @@ namespace Beny.ViewModels
                 ErrorsChanged?.Invoke(s, e);
             };
 
-            ForecastList = new ObservableCollection<string>(_mainRepository.Forecasts.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
-            SportList = new ObservableCollection<string>(_mainRepository.Sports.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
-            CompetitionList = new ObservableCollection<string>(_mainRepository.Competitions.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
-            TeamList = new ObservableCollection<string>(_mainRepository.Teams.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
+            ForecastList = new HashSet<string>(_mainContext.Forecasts.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
+            SportList = new HashSet<string>(_mainContext.Sports.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
+            CompetitionList = new HashSet<string>(_mainContext.Competitions.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
+            TeamList = new HashSet<string>(_mainContext.Teams.Local.Where(x => x.DeletedAt == null).Select(x => x.Name));
 
             AllMinutes = Enumerable.Range(0, 60).ToArray();
             AllHours = Enumerable.Range(0, 24).ToArray();
 
-            CreateFootballEventCommand = new RelayCommand(SaveFootballEvent, x => CanCreate);
-            EditFootballEventCommand = new RelayCommand(SaveFootballEvent, x => CanCreate && SelectedFootballEvent != null);
+            CreateFootballEventCommand = new RelayCommand(_ => SaveFootballEvent(true), x => CanCreate);
+            EditFootballEventCommand = new RelayCommand(_ => SaveFootballEvent(false), x => CanCreate && SelectedFootballEvent != null);
             ClearFootballEventCommand = new RelayCommand(ClearFootballEvent);
             DeleteFootballEventCommand = new RelayCommand(DeleteFootballEvent, x => SelectedFootballEvent != null);
 
@@ -325,9 +326,11 @@ namespace Beny.ViewModels
             UpdateFootballEventStatusCommand = new RelayCommand(UpdateFootballEventStatus, x => SelectedFootballEvent != null);
 
             OpenTagsWindowCommand = new RelayCommand(OpenTagsWindow);
+        } 
 
-            
-        }
+        #endregion
+
+        #region OpenTagsWindow
 
         private void OpenTagsWindow(object obj)
         {
@@ -343,125 +346,49 @@ namespace Beny.ViewModels
             }
         }
 
-        private void SaveFootballEvent(object x)
+        #endregion
+
+        private void SaveFootballEvent(bool isNew)
         {
-            bool updateFootballEvent = x != null,
-                 addFootballEvent = x == null;
+            Competition competition = _mainContext.Competitions.Local.SingleOrDefault(x => x.Name == Competition.Trim(), new Competition() { Name = Competition.Trim() });
+            Sport sport = _mainContext.Sports.Local.SingleOrDefault(x => x.Name == Sport.Trim(), new Sport() { Name = Sport.Trim() });
+            Forecast forecast = _mainContext.Forecasts.Local.SingleOrDefault(x => x.Name == Forecast.Trim(), new Forecast() { Name = Forecast.Trim() });
+            Team homeTeam = _mainContext.Teams.Local.SingleOrDefault(x => x.Name == HomeTeam.Trim(), new Team() { Name = HomeTeam.Trim() });
+            Team guestTeam = _mainContext.Teams.Local.SingleOrDefault(x => x.Name == GuestTeam.Trim(), new Team() { Name = GuestTeam.Trim() });
 
-            Competition? competition = _mainRepository.Competitions.Local.SingleOrDefault(x => x.Name == Competition);
+            CompetitionList.Add(competition.Name);
+            SportList.Add(sport.Name);
+            ForecastList.Add(forecast.Name);
+            TeamList.Add(homeTeam.Name);
+            TeamList.Add(guestTeam.Name);
 
-            if (competition == null)
-            {
-                competition = new Competition()
-                {
-                    Name = Competition.Trim()
-                };
+            _mainContext.Competitions.Local.Add(competition);
+            _mainContext.Sports.Local.Add(sport);
+            _mainContext.Forecasts.Local.Add(forecast);
+            _mainContext.Teams.Local.Add(homeTeam);
+            _mainContext.Teams.Local.Add(guestTeam);
 
-                _mainRepository.Competitions.Local.Add(competition);
-
-                CompetitionList.Add(competition.Name);
-            }
-            else
-            {
-                competition.DeletedAt = null;
-
-                CompetitionList.Add(competition.Name);
-            }
-
-            Sport? sport = _mainRepository.Sports.Local.SingleOrDefault(x => x.Name == Sport);
-
-            if (sport == null)
-            {
-                sport = new Sport()
-                {
-                    Name = Sport.Trim()
-                };
-
-                _mainRepository.Sports.Local.Add(sport);
-
-                SportList.Add(sport.Name);
-            }
-            else
-            {
-                sport.DeletedAt = null;
-
-                SportList.Add(sport.Name);
-            }
-
-            Forecast? forecast = _mainRepository.Forecasts.Local.SingleOrDefault(x => x.Name == Forecast);
-
-            if (forecast == null)
-            {
-                forecast = new Forecast()
-                {
-                    Name = Forecast.Trim()
-                };
-
-                _mainRepository.Forecasts.Local.Add(forecast);
-
-                ForecastList.Add(forecast.Name);
-            }
-            else
-            {
-                forecast.DeletedAt = null;
-
-                ForecastList.Add(forecast.Name);
-            }
-
-            Team? homeTeam = _mainRepository.Teams.Local.SingleOrDefault(x => x.Name == HomeTeam.Trim());
-
-            if (homeTeam == null)
-            {
-                homeTeam = new Team()
-                {
-                    Name = HomeTeam.Trim()
-                };
-
-                _mainRepository.Teams.Local.Add(homeTeam);
-
-                TeamList.Add(homeTeam.Name);
-            }
-            else
-            {
-                homeTeam.DeletedAt = null;
-
-                TeamList.Add(homeTeam.Name);
-            }
-
-            Team? guestTeam = _mainRepository.Teams.Local.SingleOrDefault(x => x.Name == GuestTeam.Trim());
-
-            if (guestTeam == null)
-            {
-                guestTeam = new Team()
-                {
-                    Name = GuestTeam.Trim()
-                };
-
-                _mainRepository.Teams.Local.Add(guestTeam);
-                TeamList.Add(guestTeam.Name);
-            }
-            else
-            {
-                guestTeam.DeletedAt = null;
-
-                TeamList.Add(guestTeam.Name);
-            }
-
-            FootballEvent footballEvent = new FootballEvent();
-
-            if (updateFootballEvent)
-            {
-                footballEvent = SelectedFootballEvent;
-            }
+            FootballEvent footballEvent = isNew ? new FootballEvent() { CreatedAt = DateTime.Now } : SelectedFootballEvent;
 
             footballEvent.StartedAt = new DateTime(Date.Year, Date.Month, Date.Day, Hour, Minute, 0);
             footballEvent.Coefficient = float.Parse(Coefficient);
             footballEvent.FootballEventStatus = FootballEventStatus.NotCalculated;
+
             footballEvent.Competition = competition;
+            footballEvent.Competition.DeletedAt = null;
+
             footballEvent.Sport = sport;
+            footballEvent.Sport.DeletedAt = null;
+
             footballEvent.Forecast = forecast;
+            footballEvent.Forecast.DeletedAt = null;
+
             footballEvent.HomeTeam = homeTeam;
+            footballEvent.HomeTeam.DeletedAt = null;
+
             footballEvent.GuestTeam = guestTeam;
+            footballEvent.GuestTeam.DeletedAt = null;
+
             footballEvent.IsLive = IsLive;
 
             footballEvent.FootballEventTags.Clear();
@@ -471,22 +398,27 @@ namespace Beny.ViewModels
                 footballEvent.FootballEventTags.Add(new FootballEventTag() { Tag = tag });
             }
 
-            if (addFootballEvent)
+            if (isNew)
             {
-                footballEvent.CreatedAt = DateTime.Now;
                 CurrentBet.FootballEvents.Add(footballEvent);
             }
 
             OnPropertyChanged(nameof(CurrentBet));
             OnPropertyChanged(nameof(SelectedFootballEvent));
-        }
+        } 
+
+        #region UpdateFootballEventStatus
 
         private void UpdateFootballEventStatus(object x)
         {
-            FootballEventStatus updateStatus = (FootballEventStatus) x;
+            FootballEventStatus updateStatus = (FootballEventStatus)x;
 
             SelectedFootballEvent.FootballEventStatus = updateStatus;
-        }
+        } 
+
+        #endregion
+
+        #region ClearFootballEvent
 
         private void ClearFootballEvent(object x)
         {
@@ -501,30 +433,40 @@ namespace Beny.ViewModels
             Date = DateTime.Now;
 
             Tags.Clear();
-        }
+        } 
+
+        #endregion
+
+        #region DeleteFootballEvent
 
         private void DeleteFootballEvent(object x)
         {
             CurrentBet.FootballEvents.Remove(SelectedFootballEvent);
-        }
+        } 
 
+        #endregion
+
+        #region SaveBet
         private void SaveBet(object x)
         {
-            if (UpdateBetId == -1)
+            if (UpdateBetId < 1)
             {
-                _mainRepository.Add(CurrentBet);
+                _mainContext.Add(CurrentBet);
             }
 
-            _mainRepository.SaveChanges();
+            _mainContext.SaveChanges();
 
             DialogResult = true;
 
             _dialogService.Close(this);
-        }
+        } 
+        #endregion
+
+        #region LoadedWindow
 
         private void LoadedWindow(object x)
         {
-            CurrentBet = _mainRepository.Bets.Local.FirstOrDefault(x => x.Id == UpdateBetId, new Bet() { CreatedAt = DateTime.Now, FootballEvents = new ItemObservableCollection<FootballEvent>()});
+            CurrentBet = _mainContext.Bets.Local.FirstOrDefault(x => x.Id == UpdateBetId, new Bet() { CreatedAt = DateTime.Now, FootballEvents = new ItemObservableCollection<FootballEvent>() });
 
             HomeTeam = "Ливерпуль";
             GuestTeam = "Манчестер Сити";
@@ -535,15 +477,19 @@ namespace Beny.ViewModels
             Tags = new ObservableCollection<Tag>();
             Date = DateTime.Now;
 
-            _selectedFootballEvent = default;
+            _selectedFootballEvent = null;
 
             OnPropertyChanged(nameof(SelectedFootballEvent));
             OnPropertyChanged(nameof(CurrentBet));
-        }
+        } 
+
+        #endregion
+
+        #region ClosedWindow
 
         private void ClosedWindow(object x)
         {
-            foreach (var entry in _mainRepository.ChangeTracker.Entries())
+            foreach (var entry in _mainContext.ChangeTracker.Entries())
             {
                 switch (entry.State)
                 {
@@ -555,7 +501,7 @@ namespace Beny.ViewModels
                         entry.Reload();
                         break;
                     case EntityState.Added:
-                        if (entry.Entity.GetType() == typeof(FootballEvent) || entry.Entity.GetType() == typeof(FootballEventTag))
+                        if (entry.Entity.GetType() == typeof(FootballEvent) || entry.Entity.GetType() == typeof(FootballEventTag) || entry.Entity.GetType() == typeof(Bet))
                         {
                             entry.State = EntityState.Detached;
                         }
@@ -566,13 +512,13 @@ namespace Beny.ViewModels
 
         #endregion
 
-        #region [IModalDialogViewModel]
+        #region IModalDialogViewModel
 
         public bool? DialogResult { get; set; } = false;
 
         #endregion
 
-        #region [INotifyDataErrorInfo]
+        #region INotifyDataErrorInfo
 
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 

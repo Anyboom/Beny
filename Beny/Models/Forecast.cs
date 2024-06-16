@@ -3,7 +3,7 @@ using Beny.Models.Interfaces;
 
 namespace Beny.Models
 {
-    public class Forecast : BindableBase, IDictionaryModel
+    public class Forecast : NotifyPropertyChanged, IDictionaryModel
     {
         private int _id;
         public int Id

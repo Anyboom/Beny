@@ -1,10 +1,10 @@
 ﻿using Beny.Base;
 using Beny.Collections;
-using Beny.Enums;
+using Beny.Models.Enums;
 
 namespace Beny.Models
 {
-    public class Bet : BindableBase
+    public class Bet : NotifyPropertyChanged
     {
         private int _Id;
         public int Id

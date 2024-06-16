@@ -1,12 +1,12 @@
 ﻿using System.Windows;
 using Beny.Models;
-using Beny.Repositories;
 using Beny.ViewModels;
 using Beny.Views;
 using Beny.Views.Dialogs;
 using Beny.Views.Windows;
 using MvvmDialogs;
 using SimpleInjector;
+using Beny.Models.Contexts;
 
 namespace Beny
 {
@@ -19,7 +19,7 @@ namespace Beny
 
             container.Register<IDialogService>(() => new DialogService(), Lifestyle.Singleton);
 
-            container.Register(() => new MainRepository(), Lifestyle.Singleton);
+            container.Register(() => new MainContext(), Lifestyle.Singleton);
 
             container.Register<MainViewModel>();
             container.Register<MainWindow>();

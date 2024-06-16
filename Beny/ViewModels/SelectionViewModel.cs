@@ -2,12 +2,12 @@
 using System.Windows.Input;
 using Beny.Base;
 using Beny.Commands;
-using Beny.Repositories;
+using Beny.Models.Contexts;
 using MvvmDialogs;
 
 namespace Beny.ViewModels
 {
-    public class SelectionViewModel<T> : BindableBase, IModalDialogViewModel where T: class, new ()
+    public class SelectionViewModel<T> : NotifyPropertyChanged, IModalDialogViewModel where T: class, new ()
     {
         public bool? DialogResult { get; set; } = false;
         public ObservableCollection<T> LeftItems { get; set; }
@@ -15,7 +15,7 @@ namespace Beny.ViewModels
         public T SelectedLeftItem { get; set; }
         public T SelectedRigthItem { get; set; }
 
-        private readonly MainRepository _mainRepository;
+        private readonly MainContext _mainContext;
         private readonly IDialogService _dialogService;
 
         public ICommand LoadedWindowCommand { get; set; }
@@ -23,9 +23,9 @@ namespace Beny.ViewModels
         public ICommand ToLeftCommand { get; set; }
         public ICommand SaveCommand { get; set; }
 
-        public SelectionViewModel(MainRepository mainRepository, IDialogService dialogService)
+        public SelectionViewModel(MainContext mainContext, IDialogService dialogService)
         {
-            _mainRepository = mainRepository;
+            _mainContext = mainContext;
             _dialogService = dialogService;
 
             LoadedWindowCommand = new RelayCommand(LoadedWindow);
@@ -55,7 +55,7 @@ namespace Beny.ViewModels
 
         private void LoadedWindow(object obj)
         {
-            LeftItems = new ObservableCollection<T>(_mainRepository.Set<T>().Local.Except(RigthItems));
+            LeftItems = new ObservableCollection<T>(_mainContext.Set<T>().Local.Except(RigthItems));
 
             OnPropertyChanged(nameof(RigthItems));
             OnPropertyChanged(nameof(LeftItems));

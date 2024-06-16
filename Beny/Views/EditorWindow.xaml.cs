@@ -1,4 +1,4 @@
-﻿using Beny.Utilities;
+﻿using Beny.Helpers;
 using System.Windows;
 
 namespace Beny.Views.Dialogs

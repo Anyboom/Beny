@@ -1,18 +1,18 @@
 ﻿using Beny.Base;
 using Beny.Commands;
 using Beny.Models.Interfaces;
-using Beny.Repositories;
 using Microsoft.EntityFrameworkCore;
 using MvvmDialogs;
 using System.Collections.ObjectModel;
 using System.Windows.Data;
 using System.Windows.Input;
+using Beny.Models.Contexts;
 
 namespace Beny.ViewModels
 {
-    public class EditorViewModel<T> : BindableBase, IModalDialogViewModel where T: class, IDictionaryModel, new()
+    public class EditorViewModel<T> : NotifyPropertyChanged, IModalDialogViewModel where T: class, IDictionaryModel, new()
     {
-        private readonly MainRepository _mainRepository;
+        private readonly MainContext _mainContext;
         private readonly IDialogService _dialogService;
         private readonly CollectionView _collectionView;
 
@@ -67,12 +67,12 @@ namespace Beny.ViewModels
         public ICommand SaveItemsCommand { get; set; }
         public ICommand ClosedWindowCommand { get; set; }
 
-        public EditorViewModel(MainRepository mainRepository, IDialogService dialogService)
+        public EditorViewModel(MainContext mainContext, IDialogService dialogService)
         {
-            _mainRepository = mainRepository;
+            _mainContext = mainContext;
             _dialogService = dialogService;
 
-            Items = _mainRepository.Set<T>().Local.ToObservableCollection();
+            Items = _mainContext.Set<T>().Local.ToObservableCollection();
 
             _collectionView = (CollectionView) CollectionViewSource.GetDefaultView(Items);
 
@@ -96,7 +96,7 @@ namespace Beny.ViewModels
 
         private void ClosedWindow(object obj)
         {
-            foreach (var entry in _mainRepository.ChangeTracker.Entries())
+            foreach (var entry in _mainContext.ChangeTracker.Entries())
             {
                 switch (entry.State)
                 {
@@ -116,7 +116,7 @@ namespace Beny.ViewModels
 
         private void SaveItems(object obj)
         {
-            _mainRepository.SaveChanges();
+            _mainContext.SaveChanges();
 
             DialogResult = true;
 
@@ -142,7 +142,7 @@ namespace Beny.ViewModels
                 Name = InputItem
             };
 
-            _mainRepository.Set<T>().Add(item);
+            _mainContext.Set<T>().Add(item);
         }
     }
 }

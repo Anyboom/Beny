@@ -1,13 +1,13 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
 
-namespace Beny.Converters
+namespace Beny.Helpers.Converters
 {
     class BooleanTypeFootballEventToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            bool IsExpress = (bool) value;
+            bool IsExpress = (bool)value;
 
             if (IsExpress)
             {
